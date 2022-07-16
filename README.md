@@ -64,13 +64,14 @@ Nmap done: 1 IP address (1 host up) scanned in 23.95 seconds
 ```
 Our scan shows some interesting results. Port 23 is open, and reserved for the service telnet. Telnet is an insecure, outdated protocol that should not be used. A quote from wikipedia:
 
-```
-Telnet, by default, does not encrypt any data sent over the connection (including passwords), and so it is often feasible to eavesdrop on the communications and use the password later for malicious purposes; anybody who has access to a router, switch, hub or gateway located on the network between the two hosts where Telnet is being used can intercept the packets passing by and obtain login, password and whatever else is typed with a packet analyzer.
+
+"Telnet, by default, does not encrypt any data sent over the connection (including passwords), and so it is often feasible to eavesdrop on the communications and use the password later for malicious purposes; anybody who has access to a router, switch, hub or gateway located on the network between the two hosts where Telnet is being used can intercept the packets passing by and obtain login, password and whatever else is typed with a packet analyzer.
 
 Most implementations of Telnet have no authentication that would ensure communication is carried out between the two desired hosts and not intercepted in the middle.
 
-Several vulnerabilities have been discovered over the years in commonly used Telnet daemons.
-```
+Several vulnerabilities have been discovered over the years in commonly used Telnet daemons."
+
+
 Thus, we can use this to our advantage to exploit this machine. 
 
 We can start by trying to connect to the server using the telnet service.
