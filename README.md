@@ -114,12 +114,7 @@ According to [threat intelligence reports](https://www.f5.com/labs/articles/thre
 
 ![Figure1_min](https://user-images.githubusercontent.com/59018247/179361794-36c3a464-db56-4e23-b48b-6b37ecc8b052.png)
 
-The most common user names being: 
-
-| Syntax      | Description |
-| ----------- | ----------- |
-| Header      | Title       |
-| Paragraph   | Text        |
+The 5 most common user names and passwords attacked are as follows: 
 
 | # | 	Username 	| Password |
 | ----------- | ----------- | ----------- |
@@ -128,11 +123,6 @@ The most common user names being:
 | 3 | 	user 	 |  user       | 
 | 4 | 	test 	 |  test       | 
 | 5 | 	ubuntu |  	ubuntu    | 
-
- 1. admin/admin 
- 2. root/root
- 3. administrator/administrator
-
 
 We can start by using these credentials to start with.
 
