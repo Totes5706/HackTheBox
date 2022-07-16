@@ -1,6 +1,4 @@
-Contributed By: Joe Totes
-
-## Tier 0
+### Tier 0
 
  1. [Level 1: Meow](#level-1-meow) - July 16th, 2022
  2. [Level 2: Fawn](#level-2-fawn) - July 16th, 2022
