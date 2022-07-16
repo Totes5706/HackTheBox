@@ -96,7 +96,15 @@ Escape character is '^]'.
 Meow login: 
 ```
 
-Now we can try to use some commonly used credentials that may have been set up insecurely by that admin who set up the service. Some common login user names default to admin/admin or root/root. We can start by using these credntials to start with.
+Now we can try to use some commonly used credentials that may have been set up insecurely by that admin who set up the service. 
+Some common login user names default to:
+
+ 1. admin/admin 
+ 2. root/root
+ 3. administrator/administrator
+
+
+We can start by using these credentials to start with.
 
 ```
 Meow login: admin
