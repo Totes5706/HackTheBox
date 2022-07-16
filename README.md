@@ -122,7 +122,7 @@ The most common user names being:
 | Paragraph   | Text        |
 
 | # | 	Username 	| Password |
-| ----------- | ----------- |
+| ----------- | ----------- | ----------- |
 | 1 | 	root   |    	admin   | 
 | 2 | 	admin  |    	admin   | 
 | 3 | 	user 	 |  user       | 
