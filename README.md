@@ -181,7 +181,7 @@ root@Meow:~# ls
 flag.txt  snap 
 ```
 
-As we can see, we found out first flag in the main directory.
+As we can see, we found our first flag in the main directory.
 
 ## Conclusions - Level 1 Meow
 
