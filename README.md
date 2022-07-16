@@ -1,5 +1,3 @@
-July 16, 2022
-
 Contributed By: Joe Totes
 
 Tier 0
@@ -29,4 +27,21 @@ PING 10.129.1.17 (10.129.1.17) 56(84) bytes of data.
 4 packets transmitted, 4 received, 0% packet loss, time 3004ms
 rtt min/avg/max/mdev = 6.021/8.572/12.024/2.272 ms
 ```
-As we can see, we made a connection with the host.
+As we can see, we made a connection with the host. 
+
+Next, we can try using nmap to see if there are any ports that can be exploited.
+
+```
+nmap -p- --min-rate 5000 -sC -sV {ip address}
+```
+
+Where:
+
+```
+-p-: scans ALL ports
+--min-rate <number>: Send packets no slower than <number> per second
+-sC: equivalent to --script=default
+-sV: Probe open ports to determine service/version info
+```
+
+
