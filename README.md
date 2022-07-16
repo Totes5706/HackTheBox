@@ -109,8 +109,25 @@ Escape character is '^]'.
 Meow login: 
 ```
 
-Now we can try to use some commonly used credentials that may have been set up insecurely by that admin who set up the service. 
-Some common login user names default to:
+Now we can try to use some commonly used credentials that may have been set up insecurely by an administrator who set up and configured the service. 
+According to [threat intelligence reports](https://www.f5.com/labs/articles/threat-intelligence/spaceballs-security--the-top-attacked-usernames-and-passwords)
+
+![Figure1_min](https://user-images.githubusercontent.com/59018247/179361794-36c3a464-db56-4e23-b48b-6b37ecc8b052.png)
+
+The most common user names being: 
+
+| Syntax      | Description |
+| ----------- | ----------- |
+| Header      | Title       |
+| Paragraph   | Text        |
+
+| # | 	Username 	| Password |
+| ----------- | ----------- |
+| 1 | 	root   |    	admin   | 
+| 2 | 	admin  |    	admin   | 
+| 3 | 	user 	 |  user       | 
+| 4 | 	test 	 |  test       | 
+| 5 | 	ubuntu |  	ubuntu    | 
 
  1. admin/admin 
  2. root/root
