@@ -297,7 +297,7 @@ We can start by trying to establish connection to the ftp server:
 ftp {ip address}
 ```
  
-The results of using telnet are:
+The results of using ftp are:
 
 ```
 └─$ ftp 10.129.28.125   
