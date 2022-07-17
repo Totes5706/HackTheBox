@@ -2,8 +2,8 @@
 
 ### Tier 0
 
- [Level 1: Meow](#level-1-meow) - [x] July 13th, 2022
- 2. [Level 2: Fawn](#level-2-fawn) - [x] July 14th, 2022
+ 1. [Level 1: Meow](#level-1-meow) - July 13th, 2022
+ 2. [Level 2: Fawn](#level-2-fawn) - July 14th, 2022
  3. [Level 3: Dancing](#level-3-dancing) - July 16th, 2022
  4. [Level 4: Redeemer](#level-4-redeemer) - July 16th, 2022
  5. [Level 5: Explosion](#level-5-explosion) - July 16th, 2022
