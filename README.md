@@ -134,7 +134,7 @@ The 5 most common user names and passwords attacked are as follows:
 
 We can start by using these credentials to start with.
 
-The result with attempting the user name admin:
+The result when attempting to use the user name ```admin```:
 
 ```
 Meow login: admin
@@ -142,7 +142,7 @@ Password:
 
 Login incorrect
 ```
-The result with attempting the user name root:
+The result when attempting to use the user name ```root```:
 
 ```
 Meow login: root
