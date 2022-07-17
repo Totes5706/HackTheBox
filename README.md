@@ -185,7 +185,17 @@ As we can see, we found our first flag in the main directory.
 
 ## Conclusions - Level 1 Meow
 
-Using nmap, we were able to discover the host was running telnet on port 23. From there, we were able to get root access to the telnet service, since the administrator of server had poorly configured the authentication of the system.
+| # | 	Tools 	| Description |
+| ----------- | ----------- | ----------- |
+| 1 | 	nmap   |    	Used for scanning ports on hosts. | 
+
+| # | 	Vulnerabilities 	| Critical | High | Medium | Low |
+| ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| 1 | 	Default/Weak Credentials   |    	X |  |  |  |
+| 2 | 	Telnet Service  |    	X |  |  |  |
+
+
+Using nmap, we were able to discover the host was running telnet on port 23. Logging into telnet we were then able to get root access to the service, a consequence of the server administrator having poorly configured the credentials of the system.
 
  
 
