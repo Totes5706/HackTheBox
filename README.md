@@ -209,13 +209,10 @@ As we can see, we found our first flag in the main directory.
 
 Using nmap, we were able to discover the host was running telnet on port 23. Logging into telnet we were then able to get root access to the service, a consequence of the server administrator having poorly configured the credentials of the system.
 
-##
 
 [Table of Contents](#table-of-contents) 
 
-##
 
-</br></br>
 
 
 ## Level 2: Fawn
