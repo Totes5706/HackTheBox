@@ -2,23 +2,23 @@
 
 ### Tier 0
 
- 1. [Level 1: Meow](#level-1-meow) |✓| July 13th, 2022
- 2. [Level 2: Fawn](#level-2-fawn)  |✓|  July 14th, 2022
- 3. [Level 3: Dancing](#level-3-dancing) |x|  July 16th, 2022
- 4. [Level 4: Redeemer](#level-4-redeemer)  |x| July 16th, 2022
- 5. [Level 5: Explosion](#level-5-explosion)  |x| July 16th, 2022
- 6. [Level 6: Preignition](#level-6-preignition)  |x| July 16th, 2022
+ 1. [Level 1: Meow](#level-1-meow)  ✓ July 13th, 2022
+ 2. [Level 2: Fawn](#level-2-fawn)  ✓  July 14th, 2022
+ 3. [Level 3: Dancing](#level-3-dancing)  x July 16th, 2022
+ 4. [Level 4: Redeemer](#level-4-redeemer)  x July 16th, 2022
+ 5. [Level 5: Explosion](#level-5-explosion)  x July 16th, 2022
+ 6. [Level 6: Preignition](#level-6-preignition)  x July 16th, 2022
 
 ### Tier 1
 
- 1. [Level 1: Appointment](#level-1-appointment)  |x| July 16th, 2022
- 2. [Level 2: Sequel](#level-2-sequel)  |x| July 16th, 2022
- 3. [Level 3: Crocodile](#level-3-crocodile)  |x|  July 16th, 2022
- 4. [Level 4: Responder](#level-4-responder)  |x| July 16th, 2022
- 5. [Level 5: Ignition](#level-5-ignition) |x|  July 16th, 2022
- 6. [Level 7: Bike](#level-6-bike) |x|  July 16th, 2022
- 7. [Level 8: Pennyworth](#level-6-pennyworth) |x|  July 16th, 2022
- 8. [Level 9: Tactics](#level-6-tactics) |x|  July 16th, 2022
+ 1. [Level 1: Appointment](#level-1-appointment)  x July 16th, 2022
+ 2. [Level 2: Sequel](#level-2-sequel)  x July 16th, 2022
+ 3. [Level 3: Crocodile](#level-3-crocodile)  x  July 16th, 2022
+ 4. [Level 4: Responder](#level-4-responder)  x July 16th, 2022
+ 5. [Level 5: Ignition](#level-5-ignition) x  July 16th, 2022
+ 6. [Level 7: Bike](#level-6-bike) x  July 16th, 2022
+ 7. [Level 8: Pennyworth](#level-6-pennyworth) x  July 16th, 2022
+ 8. [Level 9: Tactics](#level-6-tactics) x  July 16th, 2022
 
 ## Level 1: Meow
 
