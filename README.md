@@ -43,6 +43,7 @@ The results from the ping are:
 
 ```
 └─$ ping 10.129.1.17
+
 PING 10.129.1.17 (10.129.1.17) 56(84) bytes of data.
 64 bytes from 10.129.1.17: icmp_seq=1 ttl=63 time=9.08 ms
 64 bytes from 10.129.1.17: icmp_seq=2 ttl=63 time=7.17 ms
