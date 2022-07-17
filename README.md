@@ -213,8 +213,6 @@ Using nmap, we were able to discover the host was running telnet on port 23. Log
 [Table of Contents](#table-of-contents) 
 
 
-
-
 ## Level 2: Fawn
 
 ### Scope
@@ -223,7 +221,7 @@ The first step is listing the available information given in this scenario. We c
 
 | # | 	Description 	| Value |
 | ----------- | ----------- | ----------- |
-| 1 | 	IP Address   |    	10.129.1.17   | 
+| 1 | 	IP Address   |    	10.129.28.125   | 
 
 ### Enumeration
 
@@ -237,15 +235,18 @@ ping {ip address}
 The results from the ping are:
 
 ```
-└─$ ping 10.129.1.17
-PING 10.129.1.17 (10.129.1.17) 56(84) bytes of data.
-64 bytes from 10.129.1.17: icmp_seq=1 ttl=63 time=9.08 ms
-64 bytes from 10.129.1.17: icmp_seq=2 ttl=63 time=7.17 ms
-64 bytes from 10.129.1.17: icmp_seq=3 ttl=63 time=6.02 ms
-64 bytes from 10.129.1.17: icmp_seq=4 ttl=63 time=12.0 ms
---- 10.129.1.17 ping statistics ---
+└─$ ping 10.129.28.125
+
+PING 10.129.28.125 (10.129.28.125) 56(84) bytes of data.
+64 bytes from 10.129.28.125: icmp_seq=1 ttl=63 time=5.74 ms
+64 bytes from 10.129.28.125: icmp_seq=2 ttl=63 time=6.13 ms
+64 bytes from 10.129.28.125: icmp_seq=3 ttl=63 time=6.26 ms
+64 bytes from 10.129.28.125: icmp_seq=4 ttl=63 time=11.6 ms
+
+--- 10.129.28.125 ping statistics ---
 4 packets transmitted, 4 received, 0% packet loss, time 3004ms
-rtt min/avg/max/mdev = 6.021/8.572/12.024/2.272 ms
+rtt min/avg/max/mdev = 5.736/7.428/11.586/2.408 ms
+
 ```
 As we can see, we made a connection with the host. 
 
@@ -266,7 +267,8 @@ Where:
 The results of nmap are:
 
 ```
-nmap -p- --min-rate 3000 -sC -sV 10.129.1.17  
+nmap -p- --min-rate 3000 -sC -sV 10.129.28.125 
+  
 Starting Nmap 7.92 ( https://nmap.org ) at 2022-07-16 10:04 EDT
 Nmap scan report for 10.129.1.17
 Host is up (0.0084s latency).
@@ -300,6 +302,7 @@ The results of using telnet are:
 
 ```
 └─$ telnet 10.129.1.17
+
 Trying 10.129.1.17...
 Connected to 10.129.1.17.
 Escape character is '^]'.
@@ -329,18 +332,20 @@ The 5 most common user names and passwords attacked are as follows:
 
 We can start by using these credentials to start with.
 
-The result with attempting the user name admin:
+The result when attempting to use the user name ```admin```:
 
 ```
 Meow login: admin
+
 Password: 
 
 Login incorrect
 ```
-The result with attempting the user name root:
+The result when attempting to use the user name ```root```:
 
 ```
 Meow login: root
+
 Welcome to Ubuntu 20.04.2 LTS (GNU/Linux 5.4.0-77-generic x86_64)
 
  * Documentation:  https://help.ubuntu.com
@@ -400,8 +405,7 @@ As we can see, we found our first flag in the main directory.
 
 Using nmap, we were able to discover the host was running telnet on port 23. Logging into telnet we were then able to get root access to the service, a consequence of the server administrator having poorly configured the credentials of the system.
 
-[Table of Contents](#table-of-contents) 
 
- 
+[Table of Contents](#table-of-contents) 
 
 
