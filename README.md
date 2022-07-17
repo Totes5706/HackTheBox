@@ -310,7 +310,7 @@ Name (10.129.28.125:kali):
 ```
 We are now being prompted for a username credential.
 
-According to [microsoft](https://docs.microsoft.com/en-us/iis/configuration/system.applicationhost/sites/sitedefaults/ftpserver/security/authentication/anonymousauthentication), a common default is ```anonymous``` which can be used with any password.
+According to [microsoft](https://docs.microsoft.com/en-us/iis/configuration/system.applicationhost/sites/sitedefaults/ftpserver/security/authentication/anonymousauthentication), a common default username credential for the ftp services is ```anonymous```, which can be used with any password.
  
 The result when attempting to use the user name ```anonymous```:
 
