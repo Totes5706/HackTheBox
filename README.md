@@ -2,23 +2,23 @@
 
 ### Tier 0
 
- 1. [Level 1: Meow](#level-1-meow) |:heavy_check_mark:| July 13th, 2022
- 2. [Level 2: Fawn](#level-2-fawn)  |:heavy_check_mark:| July 14th, 2022
- 3. [Level 3: Dancing](#level-3-dancing) |:white_check_mark:|  July 16th, 2022
- 4. [Level 4: Redeemer](#level-4-redeemer) |:white_check_mark:|  July 16th, 2022
- 5. [Level 5: Explosion](#level-5-explosion) |:white_check_mark:|  July 16th, 2022
- 6. [Level 6: Preignition](#level-6-preignition) |:white_check_mark:|  July 16th, 2022
+ 1. [Level 1: Meow](#level-1-meow) - July 13th, 2022
+ 2. [Level 2: Fawn](#level-2-fawn)  -  July 14th, 2022
+ 3. [Level 3: Dancing](#level-3-dancing) -  July 16th, 2022
+ 4. [Level 4: Redeemer](#level-4-redeemer) - July 16th, 2022
+ 5. [Level 5: Explosion](#level-5-explosion) -  July 16th, 2022
+ 6. [Level 6: Preignition](#level-6-preignition) -  July 16th, 2022
 
 ### Tier 1
 
- 1. [Level 1: Appointment](#level-1-appointment) |:white_check_mark:|  July 16th, 2022
- 2. [Level 2: Sequel](#level-2-sequel) |:white_check_mark:|  July 16th, 2022
- 3. [Level 3: Crocodile](#level-3-crocodile) |:white_check_mark:|  July 16th, 2022
- 4. [Level 4: Responder](#level-4-responder) |:white_check_mark:|  July 16th, 2022
- 5. [Level 5: Ignition](#level-5-ignition) |:white_check_mark:|  July 16th, 2022
- 6. [Level 7: Bike](#level-6-bike) |:white_check_mark:|  July 16th, 2022
- 7. [Level 8: Pennyworth](#level-6-pennyworth) |:white_check_mark:|  July 16th, 2022
- 8. [Level 9: Tactics](#level-6-tactics) |:white_check_mark:|  July 16th, 2022
+ 1. [Level 1: Appointment](#level-1-appointment) -  July 16th, 2022
+ 2. [Level 2: Sequel](#level-2-sequel) -  July 16th, 2022
+ 3. [Level 3: Crocodile](#level-3-crocodile) -   July 16th, 2022
+ 4. [Level 4: Responder](#level-4-responder) -  July 16th, 2022
+ 5. [Level 5: Ignition](#level-5-ignition) -  July 16th, 2022
+ 6. [Level 7: Bike](#level-6-bike) -  July 16th, 2022
+ 7. [Level 8: Pennyworth](#level-6-pennyworth) -  July 16th, 2022
+ 8. [Level 9: Tactics](#level-6-tactics) -  July 16th, 2022
 
 ## Level 1: Meow
 
