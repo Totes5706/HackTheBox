@@ -71,7 +71,8 @@ Where:
 The results of nmap are:
 
 ```
-nmap -p- --min-rate 3000 -sC -sV 10.129.1.17  
+nmap -p- --min-rate 3000 -sC -sV 10.129.1.17
+  
 Starting Nmap 7.92 ( https://nmap.org ) at 2022-07-16 10:04 EDT
 Nmap scan report for 10.129.1.17
 Host is up (0.0084s latency).
@@ -105,6 +106,7 @@ The results of using telnet are:
 
 ```
 └─$ telnet 10.129.1.17
+
 Trying 10.129.1.17...
 Connected to 10.129.1.17.
 Escape character is '^]'.
@@ -138,6 +140,7 @@ The result when attempting to use the user name ```admin```:
 
 ```
 Meow login: admin
+
 Password: 
 
 Login incorrect
@@ -146,6 +149,7 @@ The result when attempting to use the user name ```root```:
 
 ```
 Meow login: root
+
 Welcome to Ubuntu 20.04.2 LTS (GNU/Linux 5.4.0-77-generic x86_64)
 
  * Documentation:  https://help.ubuntu.com
@@ -207,7 +211,7 @@ Using nmap, we were able to discover the host was running telnet on port 23. Log
 
 [Table of Contents](#table-of-contents) 
 
-
+</br></br>
 
 
 
