@@ -32,7 +32,7 @@ The first step is listing the available information given in this scenario. We c
 
 ### Enumeration
 
-The first step is understanding what information we currently have access too. We have been given an IP address of the machine, so we can start initiating a port scan using nmap.
+Given the overall scope of the scenario, we can now begin the enumeration process. We have been given an IP address of the machine, so we can start initiating a port scan using nmap.
 
 First we can try to see if we can make contact with the machine with a ping request.
 
@@ -225,7 +225,7 @@ The first step is listing the available information given in this scenario. We c
 
 ### Enumeration
 
-The first step is understanding what information we currently have access too. We have been given an IP address of the machine, so we can start initiating a port scan using nmap.
+Given the overall scope of the scenario, we can now begin the enumeration process. We have been given an IP address of the machine, so we can start initiating a port scan using nmap.
 
 First we can try to see if we can make contact with the machine with a ping request.
 
