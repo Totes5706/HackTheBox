@@ -267,28 +267,29 @@ Where:
 The results of nmap are:
 
 ```
-nmap -p- --min-rate 3000 -sC -sV 10.129.28.125 
-  
-Starting Nmap 7.92 ( https://nmap.org ) at 2022-07-16 10:04 EDT
-Nmap scan report for 10.129.1.17
-Host is up (0.0084s latency).
+└─$ nmap -p- --min-rate 3000 -sC -sV 10.129.28.125 
+
+Starting Nmap 7.92 ( https://nmap.org ) at 2022-07-17 18:43 EDT
+Nmap scan report for 10.129.28.125
+Host is up (0.0063s latency).
 Not shown: 65534 closed tcp ports (conn-refused)
 PORT   STATE SERVICE VERSION
-23/tcp open  telnet  Linux telnetd
-Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+21/tcp open  ftp     vsftpd 3.0.3
+Service Info: OS: Unix
 
 Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
-Nmap done: 1 IP address (1 host up) scanned in 23.95 seconds
+Nmap done: 1 IP address (1 host up) scanned in 4.93 seconds
+
 ```
-Our scan shows some interesting results. Port 23 is open, and reserved for the service telnet. Telnet is an insecure, outdated protocol that should not be used. A quote from [wikipedia](https://en.wikipedia.org/wiki/Telnet):
+Our scan shows one potential attack vector on port 21, reserved for the FTP protocol. According to digital guardian [Digital Guardian](https://digitalguardian.com/blog/what-ftp-security-securing-ftp-usage):
+
+![ftp-diagram](https://user-images.githubusercontent.com/59018247/179428018-a6de38c5-9980-4c13-883f-1936c6d82ff3.gif)
 
 
-> Telnet, by default, does not encrypt any data sent over the connection (including passwords), and so it is often feasible to eavesdrop on the communications and use the password later for malicious purposes; anybody who has access to a router, switch, hub or gateway located on the network between the two hosts where Telnet is being used can intercept the packets passing by and obtain login, password and whatever else is typed with a packet analyzer. 
+> FTP was not built to be secure. It is generally considered to be an insecure protocol because it relies on clear-text usernames and passwords for authentication and does not use encryption. Data sent via FTP is vulnerable to sniffing, spoofing, and brute force attacks, among other basic attack methods.
 
-> Most implementations of Telnet have no authentication that would ensure communication is carried out between the two desired hosts and not intercepted in the middle. 
-
-> Several vulnerabilities have been discovered over the years in commonly used Telnet daemons. 
-
+> There are several common approaches to addressing these challenges and securing FTP usage. FTPS is an extension of FTP that can encrypt connections at the client’s request. Transport Layer Security (TLS), Secure Socket Layer (SSL), and SSH File Transfer Protocol (also known as Secure File Transfer Protocol or SFTP) are often used as more secure alternatives to FTP because they use encrypted connections.
+ 
 
 Thus, we can use this to our advantage to exploit this machine. 
 
