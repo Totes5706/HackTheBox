@@ -505,7 +505,7 @@ do_connect: Connection to 10.129.250.96 failed (Error NT_STATUS_RESOURCE_NAME_NO
 Unable to connect with SMB1 -- no workgroup available
 
 ```
-We can see here all of the visible Sharenames listed. A great starting point is to try to connect with each of these shares.
+We can see here all of the visible share names listed. A great starting point is to try to connect with each of these shares.
 
 Starting with ```ADMIN$```:
 
