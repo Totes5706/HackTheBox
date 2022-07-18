@@ -375,3 +375,242 @@ Using nmap, we were able to discover the host was running an FTP service port 21
 [Table of Contents](#table-of-contents) 
 
 
+
+
+## Level 3: Dancing
+
+### Scope
+
+The first step is listing the available information given in this scenario. We can define this setup as a grey-box, since we have been given partial information about the server. The following information is what we know about the scenario:
+
+| # | 	Description 	| Value |
+| ----------- | ----------- | ----------- |
+| 1 | 	IP Address   |    	10.129.250.96   | 
+
+### Enumeration
+
+Given the overall scope of the scenario, we can now begin the enumeration process. We have been given an IP address of the machine, so we can start initiating a port scan using nmap.
+
+First we can try to see if we can make contact with the machine with a ping request.
+
+```
+ping {ip address}
+```
+The results from the ping are:
+
+```
+└─$ ping 10.129.250.96
+
+PING 10.129.250.96 (10.129.250.96) 56(84) bytes of data.
+64 bytes from 10.129.250.96: icmp_seq=1 ttl=127 time=9.95 ms
+64 bytes from 10.129.250.96: icmp_seq=2 ttl=127 time=8.91 ms
+64 bytes from 10.129.250.96: icmp_seq=3 ttl=127 time=8.10 ms
+64 bytes from 10.129.250.96: icmp_seq=4 ttl=127 time=7.16 ms
+
+--- 10.129.250.96 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3004ms
+rtt min/avg/max/mdev = 7.164/8.531/9.950/1.026 ms
+
+```
+As we can see, we made a connection with the host. 
+
+Next, we can try using nmap to see if there are any ports that can be exploited.
+
+```
+nmap -p- --min-rate 3000 -sC -sV {ip address}
+```
+
+Where:
+
+```
+-p-: scans ALL ports
+--min-rate <number>: Send packets no slower than <number> per second
+-sC: equivalent to --script=default
+-sV: Probe open ports to determine service/version info
+```
+The results of nmap are:
+
+```
+└─$ nmap -p- --min-rate 3000 -sC -sV 10.129.250.96
+
+Starting Nmap 7.92 ( https://nmap.org ) at 2022-07-18 14:53 EDT
+Nmap scan report for 10.129.250.96
+Host is up (0.0068s latency).
+Not shown: 65524 closed tcp ports (conn-refused)
+PORT      STATE SERVICE       VERSION
+135/tcp   open  msrpc         Microsoft Windows RPC
+139/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
+445/tcp   open  microsoft-ds?
+5985/tcp  open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+|_http-title: Not Found
+47001/tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+|_http-title: Not Found
+49664/tcp open  msrpc         Microsoft Windows RPC
+49665/tcp open  msrpc         Microsoft Windows RPC
+49666/tcp open  msrpc         Microsoft Windows RPC
+49667/tcp open  msrpc         Microsoft Windows RPC
+49668/tcp open  msrpc         Microsoft Windows RPC
+49669/tcp open  msrpc         Microsoft Windows RPC
+Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+|_clock-skew: 3h59m59s
+| smb2-security-mode: 
+|   3.1.1: 
+|_    Message signing enabled but not required
+| smb2-time: 
+|   date: 2022-07-18T22:54:34
+|_  start_date: N/A
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 72.18 seconds
+
+
+```
+Our scan shows quite a few ports the can be explored. One of the more interesting ones is port ```445```, which is reserved for Sever Message Block (SMB). According to [cybersophia](https://cybersophia.net/articles/what-is/what-is-smb-protocol-and-why-is-it-a-security-concern/):
+
+> To begin with the communication model, SMB works in a client–server architecture. In this model, SMB servers provide network resources, such as files or printers to the other computers, known as clients. Through this feature, users on different remote devices can collaborate on shared files and print their documents on shared printers over a network.
+
+> In addition to this primary functionality of shared files and printers on serves, SMB also provides an authenticated inter-process communication (IPC) among processes running on remote computers. For this purpose, a network share, known as IPC share (ipc$), is used on Windows computers to facilitate communication between processes and remote computers.
+
+> Especially due to its a wide array of features and complex implementation (which is contrary to the “Economy of Mechanism” principle), quite a number of SMB related vulnerabilities were discovered over the years and some of these vulnerabilities caused serious security issues around the world.
+
+> The most infamous of these vulnerabilities were 5 Remote Code Execution (RCE) vulnerabilities (CVE-2017-0143, CVE-2017-0144, CVE-2017-0145, CVE-2017-0146, CVE-2017-0148) that affected Windows computers running SMBv1. Microsoft subsequently released a patch MS17-010) on March 14, 2017, however, experts advised users and administrators to take the additional step of disabling SMBv1 on all systems.
+
+![SMB](https://user-images.githubusercontent.com/59018247/179587599-3bc9dc29-dbee-4db4-9615-0a19c4fa8397.jpg)
+
+We can start by trying to establish connection using smbclient:
+
+```
+smbclient -L {ip address}
+```
+ 
+The results of using smbclient are:
+
+```
+└─$ smbclient -L 10.129.250.96
+
+Password for [WORKGROUP\kali]:
+
+        Sharename       Type      Comment
+        ---------       ----      -------
+        ADMIN$          Disk      Remote Admin
+        C$              Disk      Default share
+        IPC$            IPC       Remote IPC
+        WorkShares      Disk      
+Reconnecting with SMB1 for workgroup listing.
+do_connect: Connection to 10.129.250.96 failed (Error NT_STATUS_RESOURCE_NAME_NOT_FOUND)
+Unable to connect with SMB1 -- no workgroup available
+
+```
+We can see here all of the visible Sharenames listed. A great starting point is to try to connect with each of these shares.
+
+Starting with ```ADMIN$```:
+
+```
+└─$ smbclient \\\\10.129.250.96\\ADMIN$
+
+Password for [WORKGROUP\kali]:
+tree connect failed: NT_STATUS_ACCESS_DENIED
+
+```
+We get an  invalid password failure response.
+
+Trying the remaining shares:
+
+```
+└─$ smbclient \\\\10.129.250.96\\C$    
+
+Password for [WORKGROUP\kali]:
+tree connect failed: NT_STATUS_ACCESS_DENIED
+
+```
+
+```
+└─$ smbclient \\\\10.129.250.96\\IPC$
+
+Password for [WORKGROUP\kali]:
+Try "help" to get a list of possible commands.
+smb: \> 
+```
+We get out first hit using IPC$. 
+
+Scanning the directory, unfortuantly there are no files to be shown:
+
+```
+smb: \> ls
+
+NT_STATUS_NO_SUCH_FILE listing \*
+```
+We can try reconnecting using the last credential, ```WorkShares```:
+
+```
+└─$ smbclient \\\\10.129.250.96\\WorkShares
+
+Password for [WORKGROUP\kali]:
+Try "help" to get a list of possible commands.
+smb: \> 
+```
+Again we get another hit, so we can try to browse the local directory.
+
+```
+└─$ smbclient \\\\10.129.250.96\\WorkShares
+
+Password for [WORKGROUP\kali]:
+Try "help" to get a list of possible commands.
+smb: \> ls
+  .                                   D        0  Mon Mar 29 04:22:01 2021
+  ..                                  D        0  Mon Mar 29 04:22:01 2021
+  Amy.J                               D        0  Mon Mar 29 05:08:24 2021
+  James.P                             D        0  Thu Jun  3 04:38:03 2021
+
+                5114111 blocks of size 4096. 1747619 blocks available
+smb: \> 
+```
+
+Now we can see two new directories that we can browse, Amy.J and James.P:
+
+```
+smb: \> cd Amy.J
+
+smb: \Amy.J\> ls
+  .                                   D        0  Mon Mar 29 05:08:24 2021
+  ..                                  D        0  Mon Mar 29 05:08:24 2021
+  worknotes.txt                       A       94  Fri Mar 26 07:00:37 2021
+
+                5114111 blocks of size 4096. 1747619 blocks available
+
+smb: \Amy.J\> ..
+
+smb: \> cd James.P
+
+smb: \James.P\> ls
+  .                                   D        0  Thu Jun  3 04:38:03 2021
+  ..                                  D        0  Thu Jun  3 04:38:03 2021
+  flag.txt                            A       32  Mon Mar 29 05:26:57 2021
+
+                5114111 blocks of size 4096. 1747611 blocks available
+smb: \James.P\> 
+```
+As we can see, we revealed our third flag inside the James.P directory.
+
+```
+smb: \James.P\> get flag.txt
+getting file \James.P\flag.txt of size 32 as flag.txt (0.7 KiloBytes/sec) (average 0.7 KiloBytes/sec)
+```
+## Conclusions - Level 3 Dancing
+
+| # | 	Tools 	| Description |
+| ----------- | ----------- | ----------- |
+| 1 | 	nmap   |    	Used for scanning ports on hosts. | 
+
+| # | 	Vulnerabilities 	| Critical | High | Medium | Low |
+| ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| 1 | 	Default/Weak Credentials   |    	X |  |  |  |
+
+Using nmap, we were able to discover the host was running an SMB on port 445. Logging in, we were then able to get access to the service, a consequence of the server administrator having poorly configured the login credentials for ```WorkShare```.
+
+
+[Table of Contents](#table-of-contents) 
