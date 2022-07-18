@@ -4,7 +4,7 @@
 
  1. ✓ [Level 1: Meow](#level-1-meow)  - July 13th, 2022
  2. ✓ [Level 2: Fawn](#level-2-fawn)  -  July 14th, 2022
- 3. ✗ [Level 3: Dancing](#level-3-dancing)  - Incomplete
+ 3. ✓ [Level 3: Dancing](#level-3-dancing)  - July 15th, 2022
  4. ✗ [Level 4: Redeemer](#level-4-redeemer) -  Incomplete
  5. ✗ [Level 5: Explosion](#level-5-explosion) - Incomplete
  6. ✗ [Level 6: Preignition](#level-6-preignition) - Incomplete
