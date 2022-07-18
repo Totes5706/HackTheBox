@@ -537,13 +537,15 @@ smb: \>
 ```
 We get out first hit using IPC$. 
 
-Scanning the directory, unfortuantly there are no files to be shown:
+Scanning the directory, there are no files to be shown:
 
 ```
 smb: \> ls
 
 NT_STATUS_NO_SUCH_FILE listing \*
 ```
+This makes sense, since IPC$ is not part of the file system. It is the inter-process communication share.
+
 We can try reconnecting using the last credential, ```WorkShares```:
 
 ```
