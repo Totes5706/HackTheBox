@@ -686,140 +686,304 @@ Service detection performed. Please report any incorrect results at https://nmap
 Nmap done: 1 IP address (1 host up) scanned in 10.01 seconds
 
 ```
-Our scan shows quite a few ports the can be explored. One of the more interesting ones is port ```445```, which is reserved for Sever Message Block (SMB). According to [cybersophia](https://cybersophia.net/articles/what-is/what-is-smb-protocol-and-why-is-it-a-security-concern/):
+Our scan shows only one potential port to explore, tcp port 6379. This port is being used for an in memory database called Redis. According to [Redis Docs](https://docs.redis.com/latest/rs/technology-behind-redis-enterprise/):
 
-> To begin with the communication model, SMB works in a client–server architecture. In this model, SMB servers provide network resources, such as files or printers to the other computers, known as clients. Through this feature, users on different remote devices can collaborate on shared files and print their documents on shared printers over a network.
+> A Redis Enterprise Cluster hosts one or more Redis databases. Access to these databases runs through a multi-threaded proxy that lives on each cluster node. These proxies efficiently and transparently route queries to the appropriate underlying Redis instance.
 
-> In addition to this primary functionality of shared files and printers on serves, SMB also provides an authenticated inter-process communication (IPC) among processes running on remote computers. For this purpose, a network share, known as IPC share (ipc$), is used on Windows computers to facilitate communication between processes and remote computers.
+> The cluster manager consists of a number of software components that monitor and configure the many Redis instances that make up a cluster.
 
-> Especially due to its a wide array of features and complex implementation (which is contrary to the “Economy of Mechanism” principle), quite a number of SMB related vulnerabilities were discovered over the years and some of these vulnerabilities caused serious security issues around the world.
+> Redis Enterprise simplifies and automates many tasks including provisioning new databases, updating database configuration, resharding existing databases, and rebalancing shards across cluster nodes.
 
-> The most infamous of these vulnerabilities were 5 Remote Code Execution (RCE) vulnerabilities (CVE-2017-0143, CVE-2017-0144, CVE-2017-0145, CVE-2017-0146, CVE-2017-0148) that affected Windows computers running SMBv1. Microsoft subsequently released a patch MS17-010) on March 14, 2017, however, experts advised users and administrators to take the additional step of disabling SMBv1 on all systems.
+![redis](https://user-images.githubusercontent.com/59018247/179869671-c20ab11b-e406-4230-b2f0-053b6908afd9.png)
 
-![SMB](https://user-images.githubusercontent.com/59018247/179587599-3bc9dc29-dbee-4db4-9615-0a19c4fa8397.jpg)
+According to the documentation, by default Redis is located on port 6379 with no password!
 
-We can start by trying to establish connection using smbclient:
+Since Redis is a remote database that stores key-value pairs, we can first try to interact with it using the redis command line interface (CLI):
 
 ```
-smbclient -L {ip address}
+└─$ redis-cli --help
+redis-cli 6.0.16
+
+Usage: redis-cli [OPTIONS] [cmd [arg [arg ...]]]
+  -h <hostname>      Server hostname (default: 127.0.0.1).
+  -p <port>          Server port (default: 6379).
+  -s <socket>        Server socket (overrides hostname and port).
+  -a <password>      Password to use when connecting to the server.
+                     You can also use the REDISCLI_AUTH environment
+                     variable to pass this password more safely
+                     (if both are used, this argument takes precedence).
+  --user <username>  Used to send ACL style 'AUTH username pass'. Needs -a.
+  --pass <password>  Alias of -a for consistency with the new --user option.
+  --askpass          Force user to input password with mask from STDIN.
+                     If this argument is used, '-a' and REDISCLI_AUTH
+                     environment variable will be ignored.
+  -u <uri>           Server URI.
+  -r <repeat>        Execute specified command N times.
+  -i <interval>      When -r is used, waits <interval> seconds per command.
+                     It is possible to specify sub-second times like -i 0.1.
+  -n <db>            Database number.
+  -3                 Start session in RESP3 protocol mode.
+  -x                 Read last argument from STDIN.
+  -d <delimiter>     Delimiter between response bulks for raw formatting (default: \n).
+  -D <delimiter>     Delimiter between responses for raw formatting (default: \n).
+  -c                 Enable cluster mode (follow -ASK and -MOVED redirections).
+  --tls              Establish a secure TLS connection.
+  --sni <host>       Server name indication for TLS.
+  --cacert <file>    CA Certificate file to verify with.
+  --cacertdir <dir>  Directory where trusted CA certificates are stored.
+                     If neither cacert nor cacertdir are specified, the default
+                     system-wide trusted root certs configuration will apply.
+  --cert <file>      Client certificate to authenticate with.
+  --key <file>       Private key file to authenticate with.
+  --raw              Use raw formatting for replies (default when STDOUT is
+                     not a tty).
+  --no-raw           Force formatted output even when STDOUT is not a tty.
+  --csv              Output in CSV format.
+  --stat             Print rolling stats about server: mem, clients, ...
+  --latency          Enter a special mode continuously sampling latency.
+                     If you use this mode in an interactive session it runs
+                     forever displaying real-time stats. Otherwise if --raw or
+                     --csv is specified, or if you redirect the output to a non
+                     TTY, it samples the latency for 1 second (you can use
+                     -i to change the interval), then produces a single output
+                     and exits.
+  --latency-history  Like --latency but tracking latency changes over time.
+                     Default time interval is 15 sec. Change it using -i.
+  --latency-dist     Shows latency as a spectrum, requires xterm 256 colors.
+                     Default time interval is 1 sec. Change it using -i.
+  --lru-test <keys>  Simulate a cache workload with an 80-20 distribution.
+  --replica          Simulate a replica showing commands received from the master.
+  --rdb <filename>   Transfer an RDB dump from remote server to local file.
+  --pipe             Transfer raw Redis protocol from stdin to server.
+  --pipe-timeout <n> In --pipe mode, abort with error if after sending all data.
+                     no reply is received within <n> seconds.
+                     Default timeout: 30. Use 0 to wait forever.
+  --bigkeys          Sample Redis keys looking for keys with many elements (complexity).
+  --memkeys          Sample Redis keys looking for keys consuming a lot of memory.
+  --memkeys-samples <n> Sample Redis keys looking for keys consuming a lot of memory.
+                     And define number of key elements to sample
+  --hotkeys          Sample Redis keys looking for hot keys.
+                     only works when maxmemory-policy is *lfu.
+  --scan             List all keys using the SCAN command.
+  --pattern <pat>    Keys pattern when using the --scan, --bigkeys or --hotkeys
+                     options (default: *).
+  --intrinsic-latency <sec> Run a test to measure intrinsic system latency.
+                     The test will run for the specified amount of seconds.
+  --eval <file>      Send an EVAL command using the Lua script at <file>.
+  --ldb              Used with --eval enable the Redis Lua debugger.
+  --ldb-sync-mode    Like --ldb but uses the synchronous Lua debugger, in
+                     this mode the server is blocked and script changes are
+                     not rolled back from the server memory.
+  --cluster <command> [args...] [opts...]
+                     Cluster Manager command and arguments (see below).
+  --verbose          Verbose mode.
+  --no-auth-warning  Don't show warning message when using password on command
+                     line interface.
+  --help             Output this help and exit.
+  --version          Output version and exit.
+
+Cluster Manager Commands:
+  Use --cluster help to list all available cluster manager commands.
+
+Examples:
+  cat /etc/passwd | redis-cli -x set mypasswd
+  redis-cli get mypasswd
+  redis-cli -r 100 lpush mylist x
+  redis-cli -r 100 -i 1 info | grep used_memory_human:
+  redis-cli --eval myscript.lua key1 key2 , arg1 arg2 arg3
+  redis-cli --scan --pattern '*:12345*'
+
+  (Note: when using --eval the comma separates KEYS[] from ARGV[] items)
+
+When no command is given, redis-cli starts in interactive mode.
+Type "help" in interactive mode for information on available commands
+and settings.
+
 ```
  
-The results of using smbclient are:
+We can try connecting to the remote database first:
 
 ```
-└─$ smbclient -L 10.129.250.96
+└─$ redis-cli -h 10.129.26.199
 
-Password for [WORKGROUP\kali]:
-
-        Sharename       Type      Comment
-        ---------       ----      -------
-        ADMIN$          Disk      Remote Admin
-        C$              Disk      Default share
-        IPC$            IPC       Remote IPC
-        WorkShares      Disk      
-Reconnecting with SMB1 for workgroup listing.
-do_connect: Connection to 10.129.250.96 failed (Error NT_STATUS_RESOURCE_NAME_NOT_FOUND)
-Unable to connect with SMB1 -- no workgroup available
+10.129.26.199:6379> 
 
 ```
-We can see here all of the visible share names listed. A great starting point is to try to connect with each of these shares.
-
-Starting with ```ADMIN$```:
+Since we eatablished a connection, we can find more information about it using ```info```:
 
 ```
-└─$ smbclient \\\\10.129.250.96\\ADMIN$
+10.129.26.199:6379> info
 
-Password for [WORKGROUP\kali]:
-tree connect failed: NT_STATUS_ACCESS_DENIED
+# Server
+redis_version:5.0.7
+redis_git_sha1:00000000
+redis_git_dirty:0
+redis_build_id:66bd629f924ac924
+redis_mode:standalone
+os:Linux 5.4.0-77-generic x86_64
+arch_bits:64
+multiplexing_api:epoll
+atomicvar_api:atomic-builtin
+gcc_version:9.3.0
+process_id:751
+run_id:b013d951cdd2dc519ba118efe21939f1cb5cce84
+tcp_port:6379
+uptime_in_seconds:1272
+uptime_in_days:0
+hz:10
+configured_hz:10
+lru_clock:14109730
+executable:/usr/bin/redis-server
+config_file:/etc/redis/redis.conf
+
+# Clients
+connected_clients:1
+client_recent_max_input_buffer:2
+client_recent_max_output_buffer:0
+blocked_clients:0
+
+# Memory
+used_memory:859624
+used_memory_human:839.48K
+used_memory_rss:6029312
+used_memory_rss_human:5.75M
+used_memory_peak:859624
+used_memory_peak_human:839.48K
+used_memory_peak_perc:100.00%
+used_memory_overhead:846142
+used_memory_startup:796224
+used_memory_dataset:13482
+used_memory_dataset_perc:21.26%
+allocator_allocated:1592408
+allocator_active:1937408
+allocator_resident:9158656
+total_system_memory:2084024320
+total_system_memory_human:1.94G
+used_memory_lua:41984
+used_memory_lua_human:41.00K
+used_memory_scripts:0
+used_memory_scripts_human:0B
+number_of_cached_scripts:0
+maxmemory:0
+maxmemory_human:0B
+maxmemory_policy:noeviction
+allocator_frag_ratio:1.22
+allocator_frag_bytes:345000
+allocator_rss_ratio:4.73
+allocator_rss_bytes:7221248
+rss_overhead_ratio:0.66
+rss_overhead_bytes:-3129344
+mem_fragmentation_ratio:7.37
+mem_fragmentation_bytes:5211696
+mem_not_counted_for_evict:0
+mem_replication_backlog:0
+mem_clients_slaves:0
+mem_clients_normal:49694
+mem_aof_buffer:0
+mem_allocator:jemalloc-5.2.1
+active_defrag_running:0
+lazyfree_pending_objects:0
+
+# Persistence
+loading:0
+rdb_changes_since_last_save:0
+rdb_bgsave_in_progress:0
+rdb_last_save_time:1658276527
+rdb_last_bgsave_status:ok
+rdb_last_bgsave_time_sec:0
+rdb_current_bgsave_time_sec:-1
+rdb_last_cow_size:409600
+aof_enabled:0
+aof_rewrite_in_progress:0
+aof_rewrite_scheduled:0
+aof_last_rewrite_time_sec:-1
+aof_current_rewrite_time_sec:-1
+aof_last_bgrewrite_status:ok
+aof_last_write_status:ok
+aof_last_cow_size:0
+
+# Stats
+total_connections_received:7
+total_commands_processed:6
+instantaneous_ops_per_sec:0
+total_net_input_bytes:318
+total_net_output_bytes:14889
+instantaneous_input_kbps:0.00
+instantaneous_output_kbps:0.00
+rejected_connections:0
+sync_full:0
+sync_partial_ok:0
+sync_partial_err:0
+expired_keys:0
+expired_stale_perc:0.00
+expired_time_cap_reached_count:0
+evicted_keys:0
+keyspace_hits:0
+keyspace_misses:0
+pubsub_channels:0
+pubsub_patterns:0
+latest_fork_usec:380
+migrate_cached_sockets:0
+slave_expires_tracked_keys:0
+active_defrag_hits:0
+active_defrag_misses:0
+active_defrag_key_hits:0
+active_defrag_key_misses:0
+
+# Replication
+role:master
+connected_slaves:0
+master_replid:dd4ac0c6f4bd6da4c7276c4bbd2e7df99b3fcedc
+master_replid2:0000000000000000000000000000000000000000
+master_repl_offset:0
+second_repl_offset:-1
+repl_backlog_active:0
+repl_backlog_size:1048576
+repl_backlog_first_byte_offset:0
+repl_backlog_histlen:0
+
+# CPU
+used_cpu_sys:1.260113
+used_cpu_user:1.267941
+used_cpu_sys_children:0.000000
+used_cpu_user_children:0.003331
+
+# Cluster
+cluster_enabled:0
+
+# Keyspace
+db0:keys=4,expires=0,avg_ttl=0
+
 
 ```
-We get an  invalid password failure response.
+We can see on the end line that there is 1 database at index 0 with 4 total keys.
 
-Trying the remaining shares:
-
-```
-└─$ smbclient \\\\10.129.250.96\\C$    
-
-Password for [WORKGROUP\kali]:
-tree connect failed: NT_STATUS_ACCESS_DENIED
+In order to explore the database, we can try using the ```select``` command: 
 
 ```
+10.129.26.199:6379> select 0
+
+OK
+```
+Now we can try accessing all the associated keys:
 
 ```
-└─$ smbclient \\\\10.129.250.96\\IPC$
+10.129.26.199:6379> keys *
 
-Password for [WORKGROUP\kali]:
-Try "help" to get a list of possible commands.
-smb: \> 
-```
-We get out first hit using IPC$. 
-
-Scanning the directory, there are no files to be shown:
+1) "numb"
+2) "flag"
+3) "stor"
+4) "temp"
 
 ```
-smb: \> ls
-
-NT_STATUS_NO_SUCH_FILE listing \*
-```
-This makes sense, since IPC$ is not part of the file system. It is the inter-process communication share.
-
-We can try reconnecting using the last credential, ```WorkShares```:
+Our fourth flag shows up under key 2. We can extract it using the ```get``` command:
 
 ```
-└─$ smbclient \\\\10.129.250.96\\WorkShares
-
-Password for [WORKGROUP\kali]:
-Try "help" to get a list of possible commands.
-smb: \> 
-```
-Again we get another hit, so we can try to browse the local directory.
+10.129.26.199:6379> get flag
 
 ```
-└─$ smbclient \\\\10.129.250.96\\WorkShares
 
-Password for [WORKGROUP\kali]:
-Try "help" to get a list of possible commands.
-smb: \> ls
-  .                                   D        0  Mon Mar 29 04:22:01 2021
-  ..                                  D        0  Mon Mar 29 04:22:01 2021
-  Amy.J                               D        0  Mon Mar 29 05:08:24 2021
-  James.P                             D        0  Thu Jun  3 04:38:03 2021
-
-                5114111 blocks of size 4096. 1747619 blocks available
-smb: \> 
-```
-
-Now we can see two new directories that we can browse, Amy.J and James.P:
-
-```
-smb: \> cd Amy.J
-
-smb: \Amy.J\> ls
-  .                                   D        0  Mon Mar 29 05:08:24 2021
-  ..                                  D        0  Mon Mar 29 05:08:24 2021
-  worknotes.txt                       A       94  Fri Mar 26 07:00:37 2021
-
-                5114111 blocks of size 4096. 1747619 blocks available
-
-smb: \Amy.J\> ..
-
-smb: \> cd James.P
-
-smb: \James.P\> ls
-  .                                   D        0  Thu Jun  3 04:38:03 2021
-  ..                                  D        0  Thu Jun  3 04:38:03 2021
-  flag.txt                            A       32  Mon Mar 29 05:26:57 2021
-
-                5114111 blocks of size 4096. 1747611 blocks available
-smb: \James.P\> 
-```
-As we can see, we revealed our third flag inside the James.P directory.
-
-```
-smb: \James.P\> get flag.txt
-getting file \James.P\flag.txt of size 32 as flag.txt (0.7 KiloBytes/sec) (average 0.7 KiloBytes/sec)
-```
-## Conclusions - Level 3 Dancing
+## Conclusions - Level 4 Redeemer
 
 | # | 	Tools 	| Description |
 | ----------- | ----------- | ----------- |
@@ -829,7 +993,7 @@ getting file \James.P\flag.txt of size 32 as flag.txt (0.7 KiloBytes/sec) (avera
 | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
 | 1 | 	Default/Weak Credentials   |    	X |  |  |  |
 
-Using nmap, we were able to discover the host was running an SMB on port 445. Logging in, we were then able to get access to the service, a consequence of the server administrator having poorly configured the login credentials for ```WorkShare```.
+Using nmap, we were able to discover the host was running an Redis on port 6379. Logging in, we were then able to get access to the database, a consequence of the server administrator having poorly configured the default login credentials.
 
 
 [Table of Contents](#table-of-contents) 
