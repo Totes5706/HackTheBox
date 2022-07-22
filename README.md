@@ -1331,7 +1331,7 @@ It appears to be a successful login! We now obtained out sixth flag.
 | # | 	Tools 	| Description |
 | ----------- | ----------- | ----------- |
 | 1 | 	nmap   |    	Used for scanning ports on hosts. | 
-| 2 | 	gobuster   |    	Used to connect to Windows RDP machines | 
+| 2 | 	gobuster   |    	Used to brute force directories, DNS subdomains, virtual host names, and amazon s3 buckets | 
 
 | # | 	Vulnerabilities 	| Critical | High | Medium | Low |
 | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
