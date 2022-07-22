@@ -1691,7 +1691,7 @@ MariaDB [htb]> select * from config;
 
 MariaDB [htb]> 
 ```
-Excitingly, we have finally revealed our eigth flag located on row 5 of the table!
+Excitingly, we have finally revealed our eighth flag located on row 5 of the table!
 
 ## Conclusions - Level 2 Sequel
 
