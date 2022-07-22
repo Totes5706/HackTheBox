@@ -12,7 +12,7 @@
 ### Tier 1
 
  1. ✓ [Level 1: Appointment](#level-1-appointment) 
- 2. ✗ [Level 2: Sequel](#level-2-sequel) 
+ 2. ✓ [Level 2: Sequel](#level-2-sequel) 
  3. ✗ [Level 3: Crocodile](#level-3-crocodile)
  4. ✗ [Level 4: Responder](#level-4-responder) 
  5. ✗ [Level 5: Ignition](#level-5-ignition) 
