@@ -1467,7 +1467,7 @@ by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
 
 
 ```
-There does not appear to be anything useful here outside of the login page that we have akready been exposed too.
+There does not appear to be anything useful here outside of the login page that we have already been exposed too.
 
 We can start some basic brute forcing techinques using the common list we found in tier 0:
 
