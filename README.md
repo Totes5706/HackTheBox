@@ -1198,3 +1198,147 @@ Using nmap, we were able to discover the host had RDP port 3389 open externally.
 
 [Table of Contents](#table-of-contents) 
 
+## Level 6: Preignition
+
+### Scope
+
+The first step is listing the available information given in this scenario. We can define this setup as a grey-box, since we have been given partial information about the server. The following information is what we know about the scenario:
+
+| # | 	Description 	| Value |
+| ----------- | ----------- | ----------- |
+| 1 | 	IP Address   |    	10.129.3.75 | 
+
+### Enumeration
+
+Given the overall scope of the scenario, we can now begin the enumeration process. We have been given an IP address of the machine, so we can start initiating a port scan using nmap.
+
+First we can try to see if we can make contact with the machine with a ping request.
+
+```
+ping {ip address}
+```
+The results from the ping are:
+
+```
+└─$ ping 10.129.3.75 
+
+PING 10.129.3.75 (10.129.3.75) 56(84) bytes of data.
+64 bytes from 10.129.3.75: icmp_seq=1 ttl=63 time=12.7 ms
+64 bytes from 10.129.3.75: icmp_seq=2 ttl=63 time=11.1 ms
+64 bytes from 10.129.3.75: icmp_seq=3 ttl=63 time=9.60 ms
+64 bytes from 10.129.3.75: icmp_seq=4 ttl=63 time=8.86 ms
+
+--- 10.129.3.75 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3005ms
+rtt min/avg/max/mdev = 8.855/10.561/12.660/1.464 ms
+
+```
+As we can see, we made a connection with the host. 
+
+Next, we can try using nmap to see if there are any ports that can be exploited.
+
+```
+nmap -p- --min-rate 3000 -sC -sV {ip address}
+```
+
+Where:
+
+```
+-p-: scans ALL ports
+--min-rate <number>: Send packets no slower than <number> per second
+-sC: equivalent to --script=default
+-sV: Probe open ports to determine service/version info
+```
+The results of nmap are:
+
+```
+└─$ nmap -p- --min-rate 3000 -sC -sV 10.129.3.75  
+
+Starting Nmap 7.92 ( https://nmap.org ) at 2022-07-22 13:17 EDT
+Nmap scan report for 10.129.3.75
+Host is up (0.0075s latency).
+Not shown: 65534 closed tcp ports (conn-refused)
+PORT   STATE SERVICE VERSION
+80/tcp open  http    nginx 1.14.2
+|_http-title: Welcome to nginx!
+|_http-server-header: nginx/1.14.2
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 10.07 seconds
+
+
+```
+Our scan reveals only one open port to dissect, port 80 a web server. The first thing to snoop in this situation is the website connected to this IP.
+
+We can see in the browser that we have a very simplistic web interface to deal with.
+
+![Screenshot_2022-07-22_13_32_24](https://user-images.githubusercontent.com/59018247/180493613-739dd947-5bc7-447b-acb6-dff0da13b32d.png)
+
+We can try analyzing the the directory structure of the website using the tool ```gobuster```.
+
+Kali Linux by default comes equiped with an assortment of wordlists to run against. The first choice will be a common list for directories located at:
+
+```
+/usr/share/wordlists/dirb/common.txt
+```
+
+Running the directory scan against our target, we reveal:
+
+```
+└─$ sudo gobuster dir -w /usr/share/wordlists/dirb/common.txt -u 10.129.3.75
+
+[sudo] password for kali: 
+===============================================================
+Gobuster v3.1.0
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://10.129.3.75
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                /usr/share/wordlists/dirb/common.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.1.0
+[+] Timeout:                 10s
+===============================================================
+2022/07/22 13:37:33 Starting gobuster in directory enumeration mode
+===============================================================
+/admin.php            (Status: 200) [Size: 999]
+                                               
+===============================================================
+2022/07/22 13:37:38 Finished
+===============================================================
+
+
+```
+We can see here that we have one directory that we can manually tap into, ```/admin.php```.
+
+Viewing this page in the browser, we reveal:
+
+ ![Screenshot_2022-07-22_13_41_17](https://user-images.githubusercontent.com/59018247/180494770-5a882570-c345-4a9b-a487-8bdf88609fb4.png)
+
+It appears to be the administration login page for the website. 
+
+We can try some basic login credentials as we attempted in previous CTF challenges.
+
+Starting with ```admin/admin``` :
+
+![Screenshot_2022-07-22_13_44_51](https://user-images.githubusercontent.com/59018247/180495246-f8cf2939-4ea5-45d1-a8b9-e9395dba1851.png)
+
+It appears to be a successful login! We now obtained out sixth flag.
+
+## Conclusions - Level 6 Preignition
+
+| # | 	Tools 	| Description |
+| ----------- | ----------- | ----------- |
+| 1 | 	nmap   |    	Used for scanning ports on hosts. | 
+| 2 | 	gobuster   |    	Used to connect to Windows RDP machines | 
+
+| # | 	Vulnerabilities 	| Critical | High | Medium | Low |
+| ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| 1 | 	Default/Weak Credentials   |    	X |  |  |  |
+
+Using nmap, we were able to discover the host had a webserver communicating on port 80. Using gobuster, we were then able to get a directory structure of the website to locate hidden pages that were not visible. We then found admin.php, where we were able to log in as a consequence of the server administrator having poorly configured the default login credentials.
+
+
+[Table of Contents](#table-of-contents) 
+
