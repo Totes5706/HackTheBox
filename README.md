@@ -1354,7 +1354,7 @@ The first step is listing the available information given in this scenario. We c
 
 | # | 	Description 	| Value |
 | ----------- | ----------- | ----------- |
-| 1 | 	IP Address   |    	10.129.3.75 | 
+| 1 | 	IP Address   |    	10.129.3.76 | 
 
 ### Enumeration
 
@@ -1368,17 +1368,17 @@ ping {ip address}
 The results from the ping are:
 
 ```
-└─$ ping 10.129.3.75 
+└─$ ping 10.129.3.76
 
-PING 10.129.3.75 (10.129.3.75) 56(84) bytes of data.
-64 bytes from 10.129.3.75: icmp_seq=1 ttl=63 time=12.7 ms
-64 bytes from 10.129.3.75: icmp_seq=2 ttl=63 time=11.1 ms
-64 bytes from 10.129.3.75: icmp_seq=3 ttl=63 time=9.60 ms
-64 bytes from 10.129.3.75: icmp_seq=4 ttl=63 time=8.86 ms
+PING 10.129.3.76 (10.129.3.76) 56(84) bytes of data.
+64 bytes from 10.129.3.76: icmp_seq=1 ttl=63 time=8.75 ms
+64 bytes from 10.129.3.76: icmp_seq=2 ttl=63 time=7.79 ms
+64 bytes from 10.129.3.76: icmp_seq=3 ttl=63 time=5.93 ms
+64 bytes from 10.129.3.76: icmp_seq=4 ttl=63 time=11.5 ms
 
---- 10.129.3.75 ping statistics ---
-4 packets transmitted, 4 received, 0% packet loss, time 3005ms
-rtt min/avg/max/mdev = 8.855/10.561/12.660/1.464 ms
+--- 10.129.3.76 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3006ms
+rtt min/avg/max/mdev = 5.932/8.483/11.460/1.994 ms
 
 ```
 As we can see, we made a connection with the host. 
@@ -1400,27 +1400,27 @@ Where:
 The results of nmap are:
 
 ```
-└─$ nmap -p- --min-rate 3000 -sC -sV 10.129.3.75  
+└─$ nmap -p- --min-rate 3000 -sC -sV 10.129.3.76
 
-Starting Nmap 7.92 ( https://nmap.org ) at 2022-07-22 13:17 EDT
-Nmap scan report for 10.129.3.75
-Host is up (0.0075s latency).
+Starting Nmap 7.92 ( https://nmap.org ) at 2022-07-22 14:14 EDT
+Nmap scan report for 10.129.3.76
+Host is up (0.013s latency).
 Not shown: 65534 closed tcp ports (conn-refused)
 PORT   STATE SERVICE VERSION
-80/tcp open  http    nginx 1.14.2
-|_http-title: Welcome to nginx!
-|_http-server-header: nginx/1.14.2
+80/tcp open  http    Apache httpd 2.4.38 ((Debian))
+|_http-title: Login
+|_http-server-header: Apache/2.4.38 (Debian)
 
 Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
-Nmap done: 1 IP address (1 host up) scanned in 10.07 seconds
-
+Nmap done: 1 IP address (1 host up) scanned in 11.06 seconds
 
 ```
+
 Our scan reveals only one open port to dissect; port 80 a web server. The first thing to snoop in this situation is the website connected to this IP.
 
-We can see in the browser that we have a very simplistic web interface to deal with.
+We can see in the browser that we have a very simplistic login page.
 
-![Screenshot_2022-07-22_13_32_24](https://user-images.githubusercontent.com/59018247/180493613-739dd947-5bc7-447b-acb6-dff0da13b32d.png)
+![Screenshot_2022-07-22_14_15_54](https://user-images.githubusercontent.com/59018247/180499799-798f907a-d928-4cbf-b72d-8d488eec5f16.png)
 
 We can try analyzing the the directory structure of the website using the tool ```gobuster```.
 
@@ -1433,14 +1433,14 @@ Kali Linux by default comes equipped with an assortment of wordlists to run agai
 Running the directory scan against our target, we reveal:
 
 ```
-└─$ sudo gobuster dir -w /usr/share/wordlists/dirb/common.txt -u 10.129.3.75
-
+└─$ sudo gobuster dir -w /usr/share/wordlists/dirb/common.txt -u 10.129.3.76    
 [sudo] password for kali: 
+
 ===============================================================
 Gobuster v3.1.0
 by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
 ===============================================================
-[+] Url:                     http://10.129.3.75
+[+] Url:                     http://10.129.3.76
 [+] Method:                  GET
 [+] Threads:                 10
 [+] Wordlist:                /usr/share/wordlists/dirb/common.txt
@@ -1448,33 +1448,52 @@ by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
 [+] User Agent:              gobuster/3.1.0
 [+] Timeout:                 10s
 ===============================================================
-2022/07/22 13:37:33 Starting gobuster in directory enumeration mode
+2022/07/22 14:20:10 Starting gobuster in directory enumeration mode
 ===============================================================
-/admin.php            (Status: 200) [Size: 999]
-                                               
+/.hta                 (Status: 403) [Size: 276]
+/.htaccess            (Status: 403) [Size: 276]
+/.htpasswd            (Status: 403) [Size: 276]
+/css                  (Status: 301) [Size: 308] [--> http://10.129.3.76/css/]
+/fonts                (Status: 301) [Size: 310] [--> http://10.129.3.76/fonts/]
+/images               (Status: 301) [Size: 311] [--> http://10.129.3.76/images/]
+/index.php            (Status: 200) [Size: 4896]                                
+/js                   (Status: 301) [Size: 307] [--> http://10.129.3.76/js/]    
+/server-status        (Status: 403) [Size: 276]                                 
+/vendor               (Status: 301) [Size: 311] [--> http://10.129.3.76/vendor/]
+                                                                                
 ===============================================================
-2022/07/22 13:37:38 Finished
+2022/07/22 14:20:14 Finished
 ===============================================================
 
 
 ```
-We can see here that we have one directory that we can manually tap into, ```/admin.php```.
+There does not appear to be anything useful here outside of the login page that we have akready been exposed too.
 
-Viewing this page in the browser, we reveal:
+We can start some basic brute forcing techinques using the common list we found in tier 0:
 
- ![Screenshot_2022-07-22_13_41_17](https://user-images.githubusercontent.com/59018247/180494770-5a882570-c345-4a9b-a487-8bdf88609fb4.png)
+| # | 	Username 	| Password |
+| ----------- | ----------- | ----------- |
+| 1 | 	root   |    	admin   | 
+| 2 | 	admin  |    	admin   | 
+| 3 | 	user 	 |  user       | 
+| 4 | 	test 	 |  test       | 
+| 5 | 	ubuntu |  	ubuntu    | 
 
-It appears to be the administration login page for the website. 
+Trying all of these combinations results in repeated failure.
 
-We can try some basic login credentials as we attempted in previous CTF challenges.
+The next attempt, we can try to see if there is a database vulnerability by attempting a SQL injection.
 
-Starting with ```admin/admin``` :
+We can try to trick the database by adding script logic to alter the backend code. Since ```admin``` is a popular username, we can start with that. However, for the password we can try to use ``` ' or '1'='1 ```. This is telling the database to add and or close with a true statement, essentially removing the need for checking the actual password.
 
-![Screenshot_2022-07-22_13_44_51](https://user-images.githubusercontent.com/59018247/180495246-f8cf2939-4ea5-45d1-a8b9-e9395dba1851.png)
+| # | 	Username 	| Password |
+| ----------- | ----------- | ----------- |
+| 1 | 	admin   |    	' or '1'='1    | 
 
-It appears to be a successful login! We now obtained out sixth flag.
+![Screenshot_2022-07-22_14_32_36](https://user-images.githubusercontent.com/59018247/180502145-a5aaf422-f3d8-4d78-a60d-1e9b9425052b.png)
 
-## Conclusions - Level 6 Preignition
+As we can see, our SQL attack was successful and we aquired our seventh flag.
+
+## Conclusions - Level 1 Appointment
 
 | # | 	Tools 	| Description |
 | ----------- | ----------- | ----------- |
@@ -1483,9 +1502,9 @@ It appears to be a successful login! We now obtained out sixth flag.
 
 | # | 	Vulnerabilities 	| Critical | High | Medium | Low |
 | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
-| 1 | 	Default/Weak Credentials   |    	X |  |  |  |
+| 1 | 	SQL Injection  |    	X |  |  |  |
 
-Using nmap, we were able to discover the host had a webserver communicating on port 80. Using gobuster, we were then able to get a directory structure of the website to locate hidden pages that were not visible. We then found admin.php, where we were able to log in as a consequence of the server administrator having poorly configured the default login credentials.
+Using nmap, we were able to discover the host had a webserver communicating on port 80. We then tried to brute force the login page unsuccessfuly. This then prompted us to try a SQL injection into the password field and proved to be successful.
 
 
 [Table of Contents](#table-of-contents) 
