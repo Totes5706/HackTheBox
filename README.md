@@ -6,7 +6,7 @@
  2. ✓ [Level 2: Fawn](#level-2-fawn) 
  3. ✓ [Level 3: Dancing](#level-3-dancing) 
  4. ✓ [Level 4: Redeemer](#level-4-redeemer) 
- 5. ✗ [Level 5: Explosion](#level-5-explosion) 
+ 5. ✓  [Level 5: Explosion](#level-5-explosion) 
  6. ✗ [Level 6: Preignition](#level-6-preignition) 
 
 ### Tier 1
