@@ -1276,7 +1276,7 @@ We can see in the browser that we have a very simplistic web interface to deal w
 
 We can try analyzing the the directory structure of the website using the tool ```gobuster```.
 
-Kali Linux by default comes equiped with an assortment of wordlists to run against. The first choice will be a common list for directories located at:
+Kali Linux by default comes equipped with an assortment of wordlists to run against. The first choice will be a common list for directories located at:
 
 ```
 /usr/share/wordlists/dirb/common.txt
