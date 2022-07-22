@@ -1104,7 +1104,7 @@ Service detection performed. Please report any incorrect results at https://nmap
 Nmap done: 1 IP address (1 host up) scanned in 72.88 seconds
 
 ```
-Our scan shows many ports to explore. Looking at the selection of ports, port 3389 being open seems to be the most interesting. This port is reserved for remote desktop logins on Windows machines. Since RDP is a native windows protocol, we need to find a tool to connect since I am currently using the Kali Linux environment.
+Our scan shows many ports to explore. Analyzing the list of open ports, port 3389 appears to be the most interesting. This port is reserved for remote desktop logins on Windows machines. Since RDP is a native Windows protocol, we need to find a tool to establish connection. This exercise is being performed using the Kali Linux distribution.
 
 A free open-source tool that we can use in Linux is [FreeRDP](https://www.freerdp.com/)
 
