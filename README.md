@@ -1647,6 +1647,7 @@ We can start by browsing the first one called ```htb```:
 
 ```
 MariaDB [(none)]> use htb;
+
 Reading table information for completion of table and column names
 You can turn off this feature to get a quicker startup with -A
 
