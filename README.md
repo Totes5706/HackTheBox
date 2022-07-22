@@ -1268,7 +1268,7 @@ Nmap done: 1 IP address (1 host up) scanned in 10.07 seconds
 
 
 ```
-Our scan reveals only one open port to dissect, port 80 a web server. The first thing to snoop in this situation is the website connected to this IP.
+Our scan reveals only one open port to dissect; port 80 a web server. The first thing to snoop in this situation is the website connected to this IP.
 
 We can see in the browser that we have a very simplistic web interface to deal with.
 
