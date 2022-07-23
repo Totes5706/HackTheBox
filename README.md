@@ -2026,7 +2026,7 @@ Nmap done: 1 IP address (1 host up) scanned in 86.46 seconds
 
 ```
 
-Our scan reveals mainly one port of interest to dissect; port 80 (Web Server). 
+Our scan reveals mainly two ports of interest to dissect; port 80 (Web Server) and port 5985 (WinRM). 
 
 The first thing we can try is to browse the website for clues.
 
@@ -2256,8 +2256,19 @@ Mode                 LastWriteTime         Length Name
 ```
 After some directory hoping, we finally found the tenth flag located at ``` Directory: C:\Users\mike\Desktop```!
 
+## Conclusions - Level 4 Responder
 
+| # | 	Tools 	| Description |
+| ----------- | ----------- | ----------- |
+| 1 | 	nmap   |    	Used for scanning ports on hosts. | 
+| 2 | 	Responder   |    	Used as a  LLMNR, NBT-NS and MDNS poisoner | 
+| 3 | 	John The Ripper   |    	Used to password/hash cracking | 
 
+| # | 	Vulnerabilities 	| Critical | High | Medium | Low |
+| ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| 1 | 	File Inclusion Vulnerability  |    	X |  |  |  |
+| 2 | 	WinRM Port Exposed Externally  |    	 | X |  |  |
 
+Using nmap, we were able to discover the host had WinRM open on port 5985, and a web server on port 80. We were then able to get a username and password for the WinRM authentication by exploiting the file inclusion vulnerability from the webserver. We then used John the Ripper to crack the password hash from the Responder output.
 
 
