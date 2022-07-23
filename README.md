@@ -1950,3 +1950,117 @@ We have finally aquired our ninth flag inside the dashboard.
 Using nmap, we were able to discover the host had an FTP server port 21, and a web server on port 80. We were then able to get a username and password list from the FTP server. Armed with that information, we then used gobuster to find the admin login page to finally crack the authenticated login.
 
 [Table of Contents](#table-of-contents) 
+
+## Level 4: Responder
+
+### Scope
+
+The first step is listing the available information given in this scenario. We can define this setup as a grey-box, since we have been given partial information about the server. The following information is what we know about the scenario:
+
+| # | 	Description 	| Value |
+| ----------- | ----------- | ----------- |
+| 1 | 	IP Address   |    	10.129.4.31 | 
+
+### Enumeration
+
+Given the overall scope of the scenario, we can now begin the enumeration process. We have been given an IP address of the machine, so we can start initiating a port scan using nmap.
+
+First we can try to see if we can make contact with the machine with a ping request.
+
+```
+ping {ip address}
+```
+The results from the ping are:
+
+```
+└─$ ping 10.129.4.31 
+
+PING 10.129.4.31 (10.129.4.31) 56(84) bytes of data.
+64 bytes from 10.129.4.31: icmp_seq=1 ttl=127 time=25.8 ms
+64 bytes from 10.129.4.31: icmp_seq=2 ttl=127 time=10.7 ms
+64 bytes from 10.129.4.31: icmp_seq=3 ttl=127 time=8.93 ms
+64 bytes from 10.129.4.31: icmp_seq=4 ttl=127 time=55.2 ms
+
+--- 10.129.4.31 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3006ms
+rtt min/avg/max/mdev = 8.932/25.176/55.191/18.532 ms
+
+```
+As we can see, we made a connection with the host. 
+
+Next, we can try using nmap to see if there are any ports that can be exploited.
+
+```
+nmap -p- --min-rate 3000 -sC -sV {ip address}
+```
+
+Where:
+
+```
+-p-: scans ALL ports
+--min-rate <number>: Send packets no slower than <number> per second
+-sC: equivalent to --script=default
+-sV: Probe open ports to determine service/version info
+```
+The results of nmap are:
+
+```
+└─$ nmap -p- --min-rate 3000 -sC -sV 10.129.4.31
+ 
+Starting Nmap 7.92 ( https://nmap.org ) at 2022-07-23 12:39 EDT
+Nmap scan report for 10.129.4.31
+Host is up (0.021s latency).
+Not shown: 65532 filtered tcp ports (no-response)
+PORT     STATE SERVICE    VERSION
+80/tcp   open  http       Apache httpd 2.4.52 ((Win64) OpenSSL/1.1.1m PHP/8.1.1)
+|_http-title: Site doesn't have a title (text/html; charset=UTF-8).
+|_http-server-header: Apache/2.4.52 (Win64) OpenSSL/1.1.1m PHP/8.1.1
+5985/tcp open  http       Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-title: Not Found
+|_http-server-header: Microsoft-HTTPAPI/2.0
+7680/tcp open  pando-pub?
+Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 86.46 seconds
+
+```
+
+Our scan reveals mainly one port of interest to dissect; port 80 (Web Server). 
+
+The first thing we can try is to browse the website for clues.
+
+![Screenshot_2022-07-23_12_43_17](https://user-images.githubusercontent.com/59018247/180614879-1f3f673e-eb14-435d-a8b2-15a40a8cf501.png)
+
+
+We can see here that we were unable to establish a connection, however in the URL we have a name shown as ```unika.htb```. The website has redirected the website to this address, however the host does not understand how to connect the dots.
+
+We can modify the etc/hosts file to resolve this issue:
+
+![Screenshot_2022-07-23_12_48_33](https://user-images.githubusercontent.com/59018247/180614872-261bec8b-2574-41c3-b159-f707f11623a0.png)
+
+After making the changes, we can now view the proper website:
+
+![Screenshot_2022-07-23_12_51_55](https://user-images.githubusercontent.com/59018247/180614934-0d358e4f-55ef-45dd-b31a-62d0a0551071.png)
+
+In snooping around on the different pages, we notice that on the language versions of the site the url is showing a page parameter:
+
+```http://unika.htb/index.php?page=french.html```
+
+This may indicate it is possible to traverse the directory of the webserver for exploitation. 
+
+Since nmap revealed we are attacking a Windows machine, we can try to access a common file that exists: 
+
+```WINDOWS\System32\drivers\etc\hosts```
+
+Modifying the url to access this file, we can try the following URL:
+
+```http://unika.htb/index.php?page=../../../../../../../../windows/system32/drivers/etc/hosts```
+
+Refreshing the webpage, we have successfully revealed the windows host file:
+
+![Screenshot_2022-07-23_13_00_17](https://user-images.githubusercontent.com/59018247/180615211-7307b681-512d-426e-ae9a-510f6769b0e8.png)
+
+
+
+
