@@ -1802,11 +1802,9 @@ Nmap done: 1 IP address (1 host up) scanned in 11.06 seconds
 
 ```
 
-Our scan reveals two open to dissect; port 21 (a non encrypted FTP channel) and port 80 (Web Server)/ 
+Our scan reveals two open ports to dissect; port 21 (a non encrypted FTP channel) and port 80 (Web Server). 
 
-The first thing we can try is browsing the FTP directory for clues.
-
-
+The first thing we can try is to browse the FTP directory for clues.
 
 ```
 └─$ ftp 10.129.3.142
