@@ -1,3 +1,7 @@
+Hack The Box is a massive, online cybersecurity training platform, allowing individuals, companies, universities and all kinds of organizations around the world to level up their hacking skills.
+
+In this blog, I will perform an analysis of each level and give a walkthrough for finding the flag.
+
 ## Table of Contents
 
 ### Tier 0
