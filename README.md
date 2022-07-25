@@ -19,7 +19,7 @@ In this blog, I will perform an analysis of each level and give a walkthrough fo
  2. ✓ [Level 2: Sequel](#level-2-sequel) 
  3. ✓ [Level 3: Crocodile](#level-3-crocodile)
  4. ✓ [Level 4: Responder](#level-4-responder) 
- 5. ✗ [Level 5: Ignition](#level-5-ignition) 
+ 5. ✓ [Level 5: Ignition](#level-5-ignition) 
  6. ✗ [Level 6: Bike](#level-6-bike) 
  7. ✗ [Level 7: Pennyworth](#level-6-pennyworth) 
  8. ✗ [Level 8: Tactics](#level-6-tactics) 
