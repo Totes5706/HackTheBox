@@ -2556,7 +2556,7 @@ We also see that the backend server is running node.js and using the express fra
 
 ![Screenshot_2022-07-25_17_03_08](https://user-images.githubusercontent.com/59018247/180873805-9d1df87d-e57a-49eb-bf66-e007e4b299c5.png)
  
-One clue given is to submit the text ```{{7*7}}``` into the email form and hit submit.
+One clue given is to submit the text: "{{7*7}}" into the email form and hit submit.
 
 Doing so reveals the following page:
 
