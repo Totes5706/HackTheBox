@@ -18,11 +18,33 @@ In this blog, I will perform an analysis of each level and give a walkthrough fo
  1. ✓ [Level 1: Appointment](#level-1-appointment) 
  2. ✓ [Level 2: Sequel](#level-2-sequel) 
  3. ✓ [Level 3: Crocodile](#level-3-crocodile)
- 4. ✓  [Level 4: Responder](#level-4-responder) 
+ 4. ✓ [Level 4: Responder](#level-4-responder) 
  5. ✗ [Level 5: Ignition](#level-5-ignition) 
- 6. ✗ [Level 7: Bike](#level-6-bike) 
- 7. ✗ [Level 8: Pennyworth](#level-6-pennyworth) 
- 8. ✗ [Level 9: Tactics](#level-6-tactics) 
+ 6. ✗ [Level 6: Bike](#level-6-bike) 
+ 7. ✗ [Level 7: Pennyworth](#level-6-pennyworth) 
+ 8. ✗ [Level 8: Tactics](#level-6-tactics) 
+
+
+### Tier 2
+
+ 1. ✗ [Level 1: Archtype](#level-1-archtype) 
+ 2. ✗ [Level 2: Oopsie](#level-2-oopsie) 
+ 3. ✗ [Level 3: Vaccine](#level-3-vaccine)
+ 4. ✗ [Level 4: Unified](#level-4-unified) 
+ 5. ✗ [Level 5: Included](#level-5-included) 
+ 6. ✗ [Level 6: Markup](#level-6-markup) 
+ 7. ✗ [Level 7: Base](#level-6-base) 
+
+### Beginner Track
+
+ 1. ✗ [Level 1: Lame](#level-1-lame) 
+ 2. ✗ [Level 2: Find The Easy Pass](#level-2-find-the-easy-pass) 
+ 3. ✗ [Level 3: Weak RSA](#level-3-weak-rsa)
+ 4. ✗ [Level 4: Jerry](#level-4-jerry) 
+ 5. ✗ [Level 5: You Know 0xDiablos](#level-5-you-know-0xdiablos) 
+ 6. ✗ [Level 6: Netmon](#level-6-netmon) 
+ 7. ✗ [Level 7: Under Construction](#level-6-under-construction) 
+ 8. ✗ [Level 8: Blue](#level-6-blue) 
 
 # Tier 0
 
