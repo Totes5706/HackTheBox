@@ -2465,3 +2465,189 @@ We can now gather out eleventh flag located at in the logon dashboard!
 | 1 | 	Default/Weak Credentials   |    	X |  |  |  |
 
 Using nmap, we were able to discover the host had a web server open on port 80. We then used gobuster as a means for finding an administration page hidden in its directory. Finally, we guess a common sequence of usernames and passwords with trailing numbers that allowed us access to the dashboard.
+
+
+
+## Level 6: Bike
+
+### Scope
+
+The first step is listing the available information given in this scenario. We can define this setup as a grey-box, since we have been given partial information about the server. The following information is what we know about the scenario:
+
+| # | 	Description 	| Value |
+| :-----------: | :-----------: | :-----------: |
+| 1 | 	IP Address   |    	10.129.97.64 | 
+
+### Enumeration
+
+Given the overall scope of the scenario, we can now begin the enumeration process. We have been given an IP address of the machine, so we can start initiating a port scan using nmap.
+
+First we can try to see if we can make contact with the machine with a ping request.
+
+```
+ping {ip address}
+```
+The results from the ping are:
+
+```
+└─$ ping 10.129.97.64
+
+PING 10.129.97.64 (10.129.97.64) 56(84) bytes of data.
+64 bytes from 10.129.97.64: icmp_seq=1 ttl=63 time=11.7 ms
+64 bytes from 10.129.97.64: icmp_seq=2 ttl=63 time=10.3 ms
+64 bytes from 10.129.97.64: icmp_seq=3 ttl=63 time=8.72 ms
+64 bytes from 10.129.97.64: icmp_seq=4 ttl=63 time=6.81 ms
+
+--- 10.129.97.64 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3005ms
+rtt min/avg/max/mdev = 6.806/9.384/11.668/1.819 ms
+
+
+```
+As we can see, we made a connection with the host. 
+
+Next, we can try using nmap to see if there are any ports that can be exploited.
+
+```
+nmap -p- --min-rate 3000 -sC -sV {ip address}
+```
+
+Where:
+
+```
+-p-: scans ALL ports
+--min-rate <number>: Send packets no slower than <number> per second
+-sC: equivalent to --script=default
+-sV: Probe open ports to determine service/version info
+```
+The results of nmap are:
+
+```
+└─$ nmap -p- --min-rate 3000 -sC -sV 10.129.97.64
+
+Starting Nmap 7.92 ( https://nmap.org ) at 2022-07-25 16:59 EDT
+Nmap scan report for 10.129.97.64
+Host is up (0.0070s latency).
+Not shown: 65533 closed tcp ports (conn-refused)
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.4 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   3072 48:ad:d5:b8:3a:9f:bc:be:f7:e8:20:1e:f6:bf:de:ae (RSA)
+|   256 b7:89:6c:0b:20:ed:49:b2:c1:86:7c:29:92:74:1c:1f (ECDSA)
+|_  256 18:cd:9d:08:a6:21:a8:b8:b6:f7:9f:8d:40:51:54:fb (ED25519)
+80/tcp open  http    Node.js (Express middleware)
+|_http-title:  Bike 
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 10.70 seconds
+
+```
+
+Our scan reveals two ports of interest; port 80 (Web Server) and port 22 (SSH Remote). 
+
+The first thing we can try is to browse the website for clues.
+
+![Screenshot_2022-07-25_17_00_56](https://user-images.githubusercontent.com/59018247/180873428-8b056ea7-bc7e-4d33-960d-0a6f48e2af7e.png)
+
+We can see here that this is a very basic website that contains one input field for email submission. 
+
+We also see that the backend server is running node.js and using the express framework from the Wappalyzer extension.
+
+![Screenshot_2022-07-25_17_03_08](https://user-images.githubusercontent.com/59018247/180873805-9d1df87d-e57a-49eb-bf66-e007e4b299c5.png)
+ 
+One clue given is to submit the text ```{{7*7}}``` into the email form and hit submit.
+
+Doing so reveals the following page:
+
+![Screenshot_2022-07-25_17_06_03](https://user-images.githubusercontent.com/59018247/180874042-99976909-bf1a-47dc-9a55-68aacd3e654f.png)
+
+The takeaway from this reveals two important pieces of information.
+
+ 1. 7*7 did not get muliplied out as an integer
+ 2. We can see from the error message that the backend is running handlebars
+ 
+In doing some recon, we discover that this is vulnerable to anm SSTI(Server Side Template Injection). According to [books.hacktricks.xyz](https://book.hacktricks.xyz/pentesting-web/ssti-server-side-template-injection):
+
+> A server-side template injection occurs when an attacker is able to use native template syntax to inject a malicious payload into a template, which is then executed server-side.
+
+> Template engines are designed to generate web pages by combining fixed templates with volatile data. Server-side template injection attacks can occur when user input is concatenated directly into a template, rather than passed in as data. This allows attackers to inject arbitrary template directives in order to manipulate the template engine, often enabling them to take complete control of the server.
+
+We can modify the etc/hosts file to resolve this issue:
+
+![Screenshot_2022-07-24_21_21_48](https://user-images.githubusercontent.com/59018247/180675802-e956590f-ddeb-43c0-a9f6-e779534c24d0.png)
+
+
+After making the changes, we can now view the proper website:
+
+![Screenshot_2022-07-24_21_24_49](https://user-images.githubusercontent.com/59018247/180676009-e3ed43c7-46c1-4fcb-9cb6-8db16d687c9c.png)
+
+
+
+In snooping around, we can first use gobuster to see if there are any hidden pages:
+
+```
+└─$ sudo gobuster dir -w /usr/share/wordlists/dirb/common.txt -u ignition.htb
+
+===============================================================
+Gobuster v3.1.0
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://ignition.htb
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                /usr/share/wordlists/dirb/common.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.1.0
+[+] Timeout:                 10s
+===============================================================
+2022/07/24 21:28:41 Starting gobuster in directory enumeration mode
+===============================================================
+/0                    (Status: 200) [Size: 25803]
+/admin                (Status: 200) [Size: 7095] 
+/catalog              (Status: 302) [Size: 0] [--> http://ignition.htb/]
+/checkout             (Status: 302) [Size: 0] [--> http://ignition.htb/checkout/cart/]
+/cms                  (Status: 200) [Size: 25817]                                     
+/contact              (Status: 200) [Size: 28673]                                     
+Progress: 1308 / 4615 (28.34%)                                                       ^C
+[!] Keyboard interrupt detected, terminating.
+                                                                                      
+===============================================================
+2022/07/24 21:32:50 Finished
+===============================================================
+
+```
+We find an admin page, asking for a username and password:
+
+![Screenshot_2022-07-24_21_33_32](https://user-images.githubusercontent.com/59018247/180676670-bd39d2d6-2aaa-4b11-a03a-deddd400c75c.png)
+
+According to the web error messages, we can see that they force the user to add numbers to their passwords for extra security. This is a good opportunity to try some common passwords and adding a basic number scheme to them:
+
+| # | 	Username 	| Password |
+| :-----------: | :-----------: | :-----------: |
+| 1 | 	admin   |    	admin123   | 
+| 2 | 	admin  |    	administrator123   | 
+| 3 | 	admin 	 |  user123       | 
+| 4 | 	admin 	 |  test123       | 
+| 5 | 	admin |  	ubuntu123    | 
+| 6 | 	admin |  	qwerty123    | 
+
+In trying all of these combinations, we find that #6 finally grants us access!
+
+![Screenshot_2022-07-24_21_41_00](https://user-images.githubusercontent.com/59018247/180677303-aac01574-0e46-4769-bf51-55e972bbfe3d.png)
+
+
+We can now gather out eleventh flag located at in the logon dashboard!
+
+## Conclusions - Level 5 Ignition
+
+| # | 	Tools 	| Description |
+| :-----------: | :-----------: | :-----------: |
+| 1 | 	nmap   |    	Used for scanning ports on hosts. | 
+| 2 | 	gobuster   |    	Used to brute force directories, DNS subdomains, virtual host names, and amazon s3 buckets | 
+
+| # | 	Vulnerabilities 	| Critical | High | Medium | Low |
+| :-----------: | :-----------: | :-----------: | :-----------: | :-----------: | :-----------: |
+| 1 | 	Default/Weak Credentials   |    	X |  |  |  |
+
+Using nmap, we were able to discover the host had a web server open on port 80. We then used gobuster as a means for finding an administration page hidden in its directory. Finally, we guess a common sequence of usernames and passwords with trailing numbers that allowed us access to the dashboard.
