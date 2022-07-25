@@ -2565,15 +2565,15 @@ Doing so reveals the following page:
 The takeaway from this reveals two important pieces of information.
 
  1. 7*7 did not get muliplied out as an integer
- 2. We can see from the error message that the backend is running handlebars
+ 2. We can see from the error message that the backend is utilizing the handlebars library
  
-In doing some recon, we discover that this is vulnerable to anm SSTI(Server Side Template Injection). According to [books.hacktricks.xyz](https://book.hacktricks.xyz/pentesting-web/ssti-server-side-template-injection):
+In doing some recon, we discover that this is vulnerable to an SSTI(Server Side Template Injection). According to [books.hacktricks.xyz](https://book.hacktricks.xyz/pentesting-web/ssti-server-side-template-injection):
 
 > A server-side template injection occurs when an attacker is able to use native template syntax to inject a malicious payload into a template, which is then executed server-side.
 
 > Template engines are designed to generate web pages by combining fixed templates with volatile data. Server-side template injection attacks can occur when user input is concatenated directly into a template, rather than passed in as data. This allows attackers to inject arbitrary template directives in order to manipulate the template engine, often enabling them to take complete control of the server.
 
-Further browsing the site shows somne potential exploits used against Node,js backend libraries. One in particular interest, is the exploit specifically for handlebars:
+Further browsing the site shows quite a few potential exploits used against Node.js backend libraries. One in particular interest, is the exploit specifically for handlebars:
 
 ```
 {{#with "s" as |string|}}
@@ -2612,7 +2612,7 @@ We get an error on the backend about require not being defined:
 {{this.push "return require('child_process').exec('whoami');"}}
 ```
 
-With some knowledge of node.js, require is not in the global scope and is not accessible here. We can try substituing is for another object that can be passed locally. 
+With some knowledge of Node.js, require is not in the global scope and is not accessible here. We can try substituing is for another object that can be passed locally. 
 
 In this case, we can try ```process```:
 
