@@ -2305,6 +2305,7 @@ After some directory hoping, we finally found the tenth flag located at ``` Dire
 
 Using nmap, we were able to discover the host had WinRM open on port 5985, and a web server on port 80. We were then able to get a username and password for the WinRM authentication by exploiting the file inclusion vulnerability from the webserver. We then used John the Ripper to crack the password hash from the Responder output.
 
+[Table of Contents](#table-of-contents) 
 
 ## Level 5: Ignition
 
@@ -2466,7 +2467,7 @@ We can now gather out eleventh flag located at in the logon dashboard!
 
 Using nmap, we were able to discover the host had a web server open on port 80. We then used gobuster as a means for finding an administration page hidden in its directory. Finally, we guess a common sequence of usernames and passwords with trailing numbers that allowed us access to the dashboard.
 
-
+[Table of Contents](#table-of-contents) 
 
 ## Level 6: Bike
 
@@ -2725,3 +2726,5 @@ Therefore, we now execute out final command to grab our twelfth flag!
 | 1 | 	Server Side Template Injection   |    	X |  |  |  |
 
 Using nmap, we were able to discover the host had a web server open on port 80. We then analyzed the input field, and realized it was open to a server side template injection exploit. Finally using Burpe Suite, we were able to inject the correct payload for the handlebar library vulnerability that gave us server side execution.
+
+[Table of Contents](#table-of-contents) 
