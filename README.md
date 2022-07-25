@@ -2187,7 +2187,14 @@ Use the "--show --format=netntlmv2" options to display all of the cracked passwo
 Session completed. 
 ```
 
-This attack was successful and we now aquired the credentials of Administrator/badmitton. If we recalled earlier, port 5985 was open, for WinRM. We can investigate that port next to see if the information we gathered thus far was useful.
+This attack was successful and we now aquired the credentials of:
+
+```
+USERNAME: Administrator
+PASSWORD: badmitton 
+```
+
+If we recall earlier, port 5985 was open as for WinRM. We can investigate that port next to see if the information we gathered thus far was useful.
 
 Since we are using Kali Linux, we can use a tool called Evil-WinRM to connect to the WinRM service (being a native windows application).
 
