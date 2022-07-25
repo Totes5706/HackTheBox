@@ -55,7 +55,7 @@ In this blog, I will perform an analysis of each level and give a walkthrough fo
 The first step is listing the available information given in this scenario. We can define this setup as a grey-box, since we have been given partial information about the server. The following information is what we know about the scenario:
 
 | # | 	Description 	| Value |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	IP Address   |    	10.129.1.17   | 
 
 ### Enumeration
@@ -156,7 +156,7 @@ According to [threat intelligence reports](https://www.f5.com/labs/articles/thre
 The 5 most common user names and passwords attacked are as follows: 
 
 | # | 	Username 	| Password |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	root   |    	admin   | 
 | 2 | 	admin  |    	admin   | 
 | 3 | 	user 	 |  user       | 
@@ -227,11 +227,11 @@ As we can see, we found our first flag in the main directory.
 ## Conclusions - Level 1 Meow
 
 | # | 	Tools 	| Description |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	nmap   |    	Used for scanning ports on hosts. | 
 
 | # | 	Vulnerabilities 	| Critical | High | Medium | Low |
-| ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: | :-----------: | :-----------: | :-----------: |
 | 1 | 	Default/Weak Credentials   |    	X |  |  |  |
 | 2 | 	Telnet Service  |    	X |  |  |  |
 
@@ -249,7 +249,7 @@ Using nmap, we were able to discover the host was running telnet on port 23. Log
 The first step is listing the available information given in this scenario. We can define this setup as a grey-box, since we have been given partial information about the server. The following information is what we know about the scenario:
 
 | # | 	Description 	| Value |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	IP Address   |    	10.129.28.125   | 
 
 ### Enumeration
@@ -388,11 +388,11 @@ local: flag.txt remote: flag.txt
 ## Conclusions - Level 2 Fawn
 
 | # | 	Tools 	| Description |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	nmap   |    	Used for scanning ports on hosts. | 
 
 | # | 	Vulnerabilities 	| Critical | High | Medium | Low |
-| ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: | :-----------: | :-----------: | :-----------: |
 | 1 | 	Default/Weak Credentials   |    	X |  |  |  |
 | 2 | 	FTP Service  |    	X |  |  |  |
 
@@ -412,7 +412,7 @@ Using nmap, we were able to discover the host was running an FTP service port 21
 The first step is listing the available information given in this scenario. We can define this setup as a grey-box, since we have been given partial information about the server. The following information is what we know about the scenario:
 
 | # | 	Description 	| Value |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	IP Address   |    	10.129.250.96   | 
 
 ### Enumeration
@@ -633,11 +633,11 @@ getting file \James.P\flag.txt of size 32 as flag.txt (0.7 KiloBytes/sec) (avera
 ## Conclusions - Level 3 Dancing
 
 | # | 	Tools 	| Description |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	nmap   |    	Used for scanning ports on hosts. | 
 
 | # | 	Vulnerabilities 	| Critical | High | Medium | Low |
-| ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: | :-----------: | :-----------: | :-----------: |
 | 1 | 	Default/Weak Credentials   |    	X |  |  |  |
 
 Using nmap, we were able to discover the host was running an SMB on port 445. Logging in, we were then able to get access to the service, a consequence of the server administrator having poorly configured the login credentials for ```WorkShare```.
@@ -654,7 +654,7 @@ Using nmap, we were able to discover the host was running an SMB on port 445. Lo
 The first step is listing the available information given in this scenario. We can define this setup as a grey-box, since we have been given partial information about the server. The following information is what we know about the scenario:
 
 | # | 	Description 	| Value |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	IP Address   |    	10.129.26.199  | 
 
 ### Enumeration
@@ -1014,11 +1014,11 @@ Our fourth flag shows up under key 2. We can extract it using the ```get``` comm
 ## Conclusions - Level 4 Redeemer
 
 | # | 	Tools 	| Description |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	nmap   |    	Used for scanning ports on hosts. | 
 
 | # | 	Vulnerabilities 	| Critical | High | Medium | Low |
-| ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: | :-----------: | :-----------: | :-----------: |
 | 1 | 	Default/Weak Credentials   |    	X |  |  |  |
 
 Using nmap, we were able to discover the host was running an Redis on port 6379. Logging in, we were then able to get access to the database, a consequence of the server administrator having poorly configured the default login credentials.
@@ -1034,7 +1034,7 @@ Using nmap, we were able to discover the host was running an Redis on port 6379.
 The first step is listing the available information given in this scenario. We can define this setup as a grey-box, since we have been given partial information about the server. The following information is what we know about the scenario:
 
 | # | 	Description 	| Value |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	IP Address   |    	10.129.2.176 | 
 
 ### Enumeration
@@ -1212,12 +1212,12 @@ Browsing the desktop we can see our fifth flag to collect.
 ## Conclusions - Level 5 Explosion
 
 | # | 	Tools 	| Description |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	nmap   |    	Used for scanning ports on hosts. | 
 | 2 | 	FreeRDP   |    	Used to connect to Windows RDP machines | 
 
 | # | 	Vulnerabilities 	| Critical | High | Medium | Low |
-| ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: | :-----------: | :-----------: | :-----------: |
 | 1 | 	Default/Weak Credentials   |    	X |  |  |  |
 | 2 | 	RDP Port 3389 exposed externally   |    	 | X |  |  |
 
@@ -1233,7 +1233,7 @@ Using nmap, we were able to discover the host had RDP port 3389 open externally.
 The first step is listing the available information given in this scenario. We can define this setup as a grey-box, since we have been given partial information about the server. The following information is what we know about the scenario:
 
 | # | 	Description 	| Value |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	IP Address   |    	10.129.3.75 | 
 
 ### Enumeration
@@ -1357,12 +1357,12 @@ It appears to be a successful login! We now obtained out sixth flag.
 ## Conclusions - Level 6 Preignition
 
 | # | 	Tools 	| Description |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	nmap   |    	Used for scanning ports on hosts. | 
 | 2 | 	gobuster   |    	Used to brute force directories, DNS subdomains, virtual host names, and amazon s3 buckets | 
 
 | # | 	Vulnerabilities 	| Critical | High | Medium | Low |
-| ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: | :-----------: | :-----------: | :-----------: |
 | 1 | 	Default/Weak Credentials   |    	X |  |  |  |
 
 Using nmap, we were able to discover the host had a webserver communicating on port 80. Using gobuster, we were then able to get a directory structure of the website to locate hidden pages that were not visible. We then found admin.php, where we were able to log in as a consequence of the server administrator having poorly configured the default login credentials.
@@ -1379,7 +1379,7 @@ Using nmap, we were able to discover the host had a webserver communicating on p
 The first step is listing the available information given in this scenario. We can define this setup as a grey-box, since we have been given partial information about the server. The following information is what we know about the scenario:
 
 | # | 	Description 	| Value |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	IP Address   |    	10.129.3.76 | 
 
 ### Enumeration
@@ -1498,7 +1498,7 @@ There does not appear to be anything useful here outside of the login page that 
 We can start some basic brute forcing techinques using the common list we found in tier 0:
 
 | # | 	Username 	| Password |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	root   |    	admin   | 
 | 2 | 	admin  |    	admin   | 
 | 3 | 	user 	 |  user       | 
@@ -1512,7 +1512,7 @@ The next attempt, we can try to see if there is a database vulnerability by atte
 We can try to trick the database by adding script logic to alter the backend code. Since ```admin``` is a popular username, we can start with that. However, for the password we can try to use ``` ' or '1'='1 ```. This is telling the database to add and or close with a true statement, essentially removing the need for checking the actual password.
 
 | # | 	Username 	| Password |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	admin   |    	' or '1'='1    | 
 
 ![Screenshot_2022-07-22_14_32_36](https://user-images.githubusercontent.com/59018247/180502145-a5aaf422-f3d8-4d78-a60d-1e9b9425052b.png)
@@ -1522,12 +1522,12 @@ As we can see, our SQL attack was successful and we aquired our seventh flag.
 ## Conclusions - Level 1 Appointment
 
 | # | 	Tools 	| Description |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	nmap   |    	Used for scanning ports on hosts. | 
 | 2 | 	gobuster   |    	Used to brute force directories, DNS subdomains, virtual host names, and amazon s3 buckets | 
 
 | # | 	Vulnerabilities 	| Critical | High | Medium | Low |
-| ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: | :-----------: | :-----------: | :-----------: |
 | 1 | 	SQL Injection  |    	X |  |  |  |
 
 Using nmap, we were able to discover the host had a webserver communicating on port 80. We then tried to brute force the login page unsuccessfuly. This then prompted us to try a SQL injection into the password field and proved to be successful.
@@ -1543,7 +1543,7 @@ Using nmap, we were able to discover the host had a webserver communicating on p
 The first step is listing the available information given in this scenario. We can define this setup as a grey-box, since we have been given partial information about the server. The following information is what we know about the scenario:
 
 | # | 	Description 	| Value |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	IP Address   |    	10.129.3.85 | 
 
 ### Enumeration
@@ -1655,14 +1655,14 @@ Now that we are in, we can query the potential databases.
 ```
 MariaDB [(none)]> show databases;
 
-+--------------------+
++:-----------:---------+
 | Database           |
-+--------------------+
++:-----------:---------+
 | htb                |
 | information_schema |
 | mysql              |
 | performance_schema |
-+--------------------+
++:-----------:---------+
 4 rows in set (0.013 sec)
 
 MariaDB [(none)]> 
@@ -1687,12 +1687,12 @@ Now we can investigate the tables inside of database htb:
 ```
 MariaDB [htb]> show tables;
 
-+---------------+
++:-----------:----+
 | Tables_in_htb |
-+---------------+
++:-----------:----+
 | config        |
 | users         |
-+---------------+
++:-----------:----+
 2 rows in set (0.014 sec)
 
 MariaDB [htb]> 
@@ -1703,9 +1703,9 @@ Next we can zoom in on each table, first starting with ```config```:
 ```
 MariaDB [htb]> select * from config;
 
-+----+-----------------------+----------------------------------+
++----+:-----------::-----------:-+:-----------::-----------::-----------:-+
 | id | name                  | value                            |
-+----+-----------------------+----------------------------------+
++----+:-----------::-----------:-+:-----------::-----------::-----------:-+
 |  1 | timeout               | 60s                              |
 |  2 | security              | default                          |
 |  3 | auto_logon            | false                            |
@@ -1713,7 +1713,7 @@ MariaDB [htb]> select * from config;
 |  5 | flag                  | 7b4bec00d1a39e3dd4e021ec3d915da8 |
 |  6 | enable_uploads        | false                            |
 |  7 | authentication_method | radius                           |
-+----+-----------------------+----------------------------------+
++----+:-----------::-----------:-+:-----------::-----------::-----------:-+
 7 rows in set (0.007 sec)
 
 MariaDB [htb]> 
@@ -1723,12 +1723,12 @@ Excitingly, we have finally revealed our eighth flag located on row 5 of the tab
 ## Conclusions - Level 2 Sequel
 
 | # | 	Tools 	| Description |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	nmap   |    	Used for scanning ports on hosts. | 
 | 2 | 	mysql   |    	Used to connect to MYSQL databases  | 
 
 | # | 	Vulnerabilities 	| Critical | High | Medium | Low |
-| ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: | :-----------: | :-----------: | :-----------: |
 | 1 | 	Default/Weak Credentials   |    	X |  |  |  |
 
 Using nmap, we were able to discover the host had a MYSQL database located on port 3306. We were then able to get access to the database, a consequence of the administrator having poorly configured the default login credentials.
@@ -1742,7 +1742,7 @@ Using nmap, we were able to discover the host had a MYSQL database located on po
 The first step is listing the available information given in this scenario. We can define this setup as a grey-box, since we have been given partial information about the server. The following information is what we know about the scenario:
 
 | # | 	Description 	| Value |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	IP Address   |    	10.129.3.142 | 
 
 ### Enumeration
@@ -1945,7 +1945,7 @@ In scanning the directories, one page seems to be promising; ```/dashboard```"
 Since we aquired a user name and password list from the ftp server, we can try running the combinations through to find a successful credential. If we recall earlier, the user/password list was as follows:
 
 | # | 	Username 	| Password |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	aron   |    	root | 
 | 2 | 	pwnmeow   |    	Supersecretpassword1 | 
 | 3 | 	egotisticalsw   |    	@BaASD&9032123sADS | 
@@ -1960,12 +1960,12 @@ We have finally aquired our ninth flag inside the dashboard.
 ## Conclusions - Level 3 Crocodile
 
 | # | 	Tools 	| Description |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	nmap   |    	Used for scanning ports on hosts. | 
 | 2 | 	gobuster   |    	Used to brute force directories, DNS subdomains, virtual host names, and amazon s3 buckets | 
 
 | # | 	Vulnerabilities 	| Critical | High | Medium | Low |
-| ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: | :-----------: | :-----------: | :-----------: |
 | 1 | 	Default/Weak Credentials   |    	X |  |  |  |
 | 2 | 	Insecure FTP Server   |    	X |  |  |  |
 
@@ -1980,7 +1980,7 @@ Using nmap, we were able to discover the host had an FTP server port 21, and a w
 The first step is listing the available information given in this scenario. We can define this setup as a grey-box, since we have been given partial information about the server. The following information is what we know about the scenario:
 
 | # | 	Description 	| Value |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	IP Address   |    	10.129.4.31 | 
 
 ### Enumeration
@@ -2263,7 +2263,7 @@ d-r---        10/10/2020  12:37 PM                Public
 
 
 Mode                 LastWriteTime         Length Name
-----                 -------------         ------ ----
+----                 :-----------:--         ------ ----
 d-----         3/10/2022   4:51 AM                Desktop
 
 
@@ -2286,13 +2286,13 @@ After some directory hoping, we finally found the tenth flag located at ``` Dire
 ## Conclusions - Level 4 Responder
 
 | # | 	Tools 	| Description |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 	nmap   |    	Used for scanning ports on hosts. | 
 | 2 | 	Responder   |    	Used as a  LLMNR, NBT-NS and MDNS poisoner | 
 | 3 | 	John The Ripper   |    	Used to password/hash cracking | 
 
 | # | 	Vulnerabilities 	| Critical | High | Medium | Low |
-| ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: | :-----------: | :-----------: | :-----------: |
 | 1 | 	File Inclusion Vulnerability  |    	X |  |  |  |
 | 2 | 	WinRM Port Exposed Externally  |    	 | X |  |  |
 
