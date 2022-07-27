@@ -3158,7 +3158,7 @@ smb: \>
 
 
 ```
-We see here mostly system files, however no flag is found.
+We see here mostly uninteresting files, and there is also no administrative access. It would be a good idea at this point to iterate to the next share.
 
 Trying the remaining shares:
 
