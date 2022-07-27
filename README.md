@@ -21,8 +21,8 @@ In this blog, I will perform an analysis of each level and give a walkthrough fo
  4. ✓ [Level 4: Responder](#level-4-responder) 
  5. ✓ [Level 5: Ignition](#level-5-ignition) 
  6. ✓ [Level 6: Bike](#level-6-bike) 
- 7. ✓ [Level 7: Pennyworth](#level-6-pennyworth) 
- 8. ✗ [Level 8: Tactics](#level-6-tactics) 
+ 7. ✓ [Level 7: Pennyworth](#level-7-pennyworth) 
+ 8. ✗ [Level 8: Tactics](#level-8-tactics) 
 
 
 ### Tier 2
@@ -33,7 +33,7 @@ In this blog, I will perform an analysis of each level and give a walkthrough fo
  4. ✗ [Level 4: Unified](#level-4-unified) 
  5. ✗ [Level 5: Included](#level-5-included) 
  6. ✗ [Level 6: Markup](#level-6-markup) 
- 7. ✗ [Level 7: Base](#level-6-base) 
+ 7. ✗ [Level 7: Base](#level-7-base) 
 
 ### Beginner Track
 
