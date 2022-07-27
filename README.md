@@ -22,7 +22,7 @@ In this blog, I will perform an analysis of each level and give a walkthrough fo
  5. ✓ [Level 5: Ignition](#level-5-ignition) 
  6. ✓ [Level 6: Bike](#level-6-bike) 
  7. ✓ [Level 7: Pennyworth](#level-7-pennyworth) 
- 8. ✗ [Level 8: Tactics](#level-8-tactics) 
+ 8. ✓ [Level 8: Tactics](#level-8-tactics) 
 
 
 ### Tier 2
