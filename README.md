@@ -3279,7 +3279,7 @@ Using nmap, we were able to discover the host was running an SMB on port 445. Lo
 
 [Table of Contents](#table-of-contents)
 
-## Tier 2
+# Tier 2
 
 ## Level 1: Archtype
 
