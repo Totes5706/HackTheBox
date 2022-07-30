@@ -4241,3 +4241,47 @@ Using nmap, we were able to discover the host was running an website on port 80.
 We then were able to find login credentials in the web folder for a user, which gave us the user flag. Analyzing the group list, we then found another user in the group who we exploited via the cat commanded to give us root access to the system; thereby giving us the final admin flag.
 
 [Table of Contents](#table-of-contents)
+
+## Level 3: Vaccine
+
+### Scope
+
+The first step is listing the available information given in this scenario. We can define this setup as a grey-box, since we have been given partial information about the server. The following information is what we know about the scenario:
+
+| # | 	Description 	| Value |
+| :-----------: | :-----------: | :-----------: |
+| 1 | 	IP Address   |    	10.129.187.99   | 
+
+### Enumeration
+
+Given the overall scope of the scenario, we can now begin the enumeration process. We have been given an IP address of the machine, so we can start initiating a port scan using nmap.
+
+First we can try to see if we can make contact with the machine with a ping request.
+
+```
+
+└─$ ftp 10.129.187.99
+Connected to 10.129.187.99.
+220 (vsFTPd 3.0.3)
+Name (10.129.187.99:kali): anonymous
+331 Please specify the password.
+Password: 
+230 Login successful.
+Remote system type is UNIX.
+Using binary mode to transfer files.
+ftp> dir
+229 Entering Extended Passive Mode (|||10235|)
+150 Here comes the directory listing.
+-rwxr-xr-x    1 0        0            2533 Apr 13  2021 backup.zip
+226 Directory send OK.
+ftp> get backup.zip
+local: backup.zip remote: backup.zip
+229 Entering Extended Passive Mode (|||10583|)
+150 Opening BINARY mode data connection for backup.zip (2533 bytes).
+100% |********************************************************************************************************************|  2533      116.83 KiB/s    00:00 ETA
+226 Transfer complete.
+2533 bytes received in 00:00 (20.68 KiB/s)
+ftp> 
+ftp> 
+zsh: suspended  ftp 10.129.187.99
+```
