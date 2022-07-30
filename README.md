@@ -4307,3 +4307,14 @@ backup.zip:$pkzip$2*1*1*0*8*24*5722*543fb39ed1a919ce7b58641a238e00f4cb3a826cfb1b
                                                                                                                                             
 ```
  
+```
+└─$ john -w=/usr/share/wordlists/rockyou.txt backup.txt 
+Using default input encoding: UTF-8
+Loaded 1 password hash (PKZIP [32/64])
+Will run 8 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+741852963        (backup.zip)     
+1g 0:00:00:00 DONE (2022-07-30 18:21) 100.0g/s 1638Kp/s 1638Kc/s 1638KC/s 123456..cocoliso
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed. 
+```
