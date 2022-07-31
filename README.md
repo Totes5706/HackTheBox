@@ -5041,7 +5041,7 @@ dd6e058e814260bc70e9bbdef2715849
 
 We uncovereed our twentieth flag.
 
- ## Conclusions - Level 3 Vaccine
+## Conclusions - Level 3 Vaccine
 
 | # | 	Tools 	| Description |
 | :-----------: | :-----------: | :-----------: |
