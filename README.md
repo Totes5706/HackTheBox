@@ -29,7 +29,7 @@ In this blog, I will perform an analysis of each level and give a walkthrough fo
 
  1. ✓ [Level 1: Archtype](#level-1-archtype) 
  2. ✓ [Level 2: Oopsie](#level-2-oopsie) 
- 3. ✗ [Level 3: Vaccine](#level-3-vaccine)
+ 3. ✓ [Level 3: Vaccine](#level-3-vaccine)
  4. ✗ [Level 4: Unified](#level-4-unified) 
  5. ✗ [Level 5: Included](#level-5-included) 
  6. ✗ [Level 6: Markup](#level-6-markup) 
