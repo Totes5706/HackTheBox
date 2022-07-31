@@ -5040,3 +5040,25 @@ dd6e058e814260bc70e9bbdef2715849
 ```
 
 We uncovereed our twentieth flag.
+
+ ## Conclusions - Level 3 Vaccine
+
+| # | 	Tools 	| Description |
+| :-----------: | :-----------: | :-----------: |
+| 1 | 	nmap   |    	Used for scanning ports on hosts. | 
+| 2 | 	sqlmap   |    	Applies automated sql injections |
+| 3 | 	john   |    	Password and hash cracking |  
+| 4 | 	netcat   |    	host listening to establish a reverse shell |  
+ 
+| # | 	Vulnerabilities 	| Critical | High | Medium | Low |
+| :-----------: | :-----------: | :-----------: | :-----------: | :-----------: | :-----------: |
+| 1 | 	FTP server running  |    	X |  |  |  |
+| 2 | 	Improper storage of PII |    	X |  |  |  |
+| 3 | 	Non-patched apache webserver |    	X |  |  |  |
+
+Using nmap, we were able to discover the host was running an website on port 80, FTP on port 21, and SSH on  port 22. We were then able to get access to the ftp server using anonymous credentials. We then used John to crack the password for a zip file that was being stored. From there, we had access a website database page, we we noticed a was potentially vulnerable to sql injection.
+
+We then used sqpmap to perform a sql injectiom, which gave us shell access to the system. This gave us user permissions, which gave us the user flag. Analyzing files on the server, we then found SSH login credentials that we used to access the server via SSH. Upon doing so, we noticed possible root escalation using a vi shell exploit. Doing so granted us root access, we gave us about admin flag. 
+
+
+[Table of Contents](#table-of-contents)
